@@ -1,0 +1,7 @@
+<form method="post" action="{{ path('app_filiere_delete', {'id': filiere.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer définitivement cette filière ? Toutes les classes associées perdront leur rattachement.');">
+    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ filiere.id) }}">
+    
+    <button class="w-full bg-red-500 hover:bg-red-50 text-black-600 font-bold py-3 px-4 border border-red-200 hover:border-red-300 rounded-lg transition-all duration-200 text-xs uppercase tracking-wider text-center">
+        Supprimer la filière de l'établissement
+    </button>
+</form>

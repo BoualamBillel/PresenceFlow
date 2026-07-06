@@ -1,0 +1,25 @@
+{% extends 'admin_base.html.twig' %}
+
+{% block title %}Nouvelle Filières - Administration{% endblock %}
+{% block header_title %}Création{% endblock %}
+
+{% block admin_content %}
+    <div class="bg-white px-6 py-8 rounded-t-3xl sm:rounded-3xl shadow-sm border border-slate-200 min-h-[70vh]">
+        
+        <div class="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-8"></div>
+
+        <div class="mb-8 inline-block">
+            <h2 class="text-xl font-black text-black tracking-tight mb-1">Nouvelle Filière</h2>
+            <div class="h-0.5 w-full bg-black"></div>
+        </div>
+
+        {{ include('filiere/_form.html.twig') }}
+        
+    </div>
+    
+    <div class="text-center mt-6">
+        <a href="{{ path('app_filiere_index') }}" class="text-xs font-bold text-slate-500 hover:text-black uppercase tracking-wider">
+            Annuler
+        </a>
+    </div>
+{% endblock %}
