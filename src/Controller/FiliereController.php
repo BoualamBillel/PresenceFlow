@@ -41,6 +41,8 @@ final class FiliereController extends AbstractController
             $entityManager->persist($filiere);
             $entityManager->flush();
 
+            $this->addFlash('success', 'La filière "' . $filiere->getNom() . '" a été créée avec succès.');
+
             return $this->redirectToRoute('app_filiere_index', [], Response::HTTP_SEE_OTHER);
         }
 
@@ -67,6 +69,8 @@ final class FiliereController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->flush();
 
+            $this->addFlash('success', 'La filière "' . $filiere->getNom() . '" a été modifiée avec succès.');
+
             return $this->redirectToRoute('app_filiere_index', [], Response::HTTP_SEE_OTHER);
         }
 
@@ -82,6 +86,9 @@ final class FiliereController extends AbstractController
         if ($this->isCsrfTokenValid('delete'.$filiere->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($filiere);
             $entityManager->flush();
+
+            $this->addFlash('success', 'La filière "' . $filiere->getNom() . '" a été supprimée avec succès.');
+
         }
 
         return $this->redirectToRoute('app_filiere_index', [], Response::HTTP_SEE_OTHER);
