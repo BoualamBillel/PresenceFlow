@@ -16,28 +16,11 @@ class FiliereRepository extends ServiceEntityRepository
         parent::__construct($registry, Filiere::class);
     }
 
-//    /**
-//     * @return Filiere[] Returns an array of Filiere objects
-//     */
-//    public function findByExampleField($value): array
-//    {
-//        return $this->createQueryBuilder('f')
-//            ->andWhere('f.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->orderBy('f.id', 'ASC')
-//            ->setMaxResults(10)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
-
-//    public function findOneBySomeField($value): ?Filiere
-//    {
-//        return $this->createQueryBuilder('f')
-//            ->andWhere('f.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->getQuery()
-//            ->getOneOrNullResult()
-//        ;
-//    }
+    public function findBySearch(string $searchTerm): array {
+        return $this->createQueryBuilder('f')
+        ->andWhere('LOWER(f.nom) LIKE LOWER(:query) OR LOWER(f.description) LIKE LOWER(:query)')
+        ->setParameter('query', '%' . $searchTerm . '%')
+        ->getQuery()
+        ->getResult();
+    }
 }

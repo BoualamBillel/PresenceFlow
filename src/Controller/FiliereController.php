@@ -15,10 +15,18 @@ use Symfony\Component\Routing\Attribute\Route;
 final class FiliereController extends AbstractController
 {
     #[Route(name: 'app_filiere_index', methods: ['GET'])]
-    public function index(FiliereRepository $filiereRepository): Response
+    public function index(Request $request, FiliereRepository $filiereRepository): Response
     {
+        $searchTerm = $request->query->get('q');
+
+        if ($searchTerm) {
+            $filieres = $filiereRepository->findBySearch($searchTerm);
+        } else {
+            $filieres = $filiereRepository->findAll();
+        }
+
         return $this->render('filiere/index.html.twig', [
-            'filieres' => $filiereRepository->findAll(),
+            'filieres' => $filieres,
         ]);
     }
 

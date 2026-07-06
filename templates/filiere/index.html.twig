@@ -13,16 +13,22 @@
         + Nouvelle Filière
     </a>
 
-    <div class="relative">
-        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-        </div>
-        <input type="text" class="w-full pl-10 pr-4 py-3 border border-slate-300 text-sm font-medium text-slate-900 placeholder-slate-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black rounded" placeholder="RECHERCHER UNE FILIÈRE...">
+<form method="get" action="{{ path('app_filiere_index') }}" class="relative">
+    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+        <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+        </svg>
     </div>
+    <input type="text" 
+           name="q"
+           value="{{ app.request.query.get('q') }}"
+           class="w-full pl-10 pr-4 py-3 border border-slate-300 text-sm font-medium text-slate-900 placeholder-slate-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black rounded" 
+           placeholder="RECHERCHER UNE FILIÈRE...">
+</form>
 
     <div class="space-y-4">
         {% for filiere in filieres %}
-            <div class="bg-white border-2 {{ loop.first ? 'border-blue-500' : 'border-slate-300' }} p-5 relative group">
+            <div class="bg-white border-2 border-slate-300 p-5 relative group">
                 
                 <div class="flex justify-between items-start">
                     <h3 class="text-xl font-black text-slate-900">{{ filiere.nom|upper }}</h3>
@@ -47,7 +53,7 @@
                 <hr class="border-slate-200 my-4">
 
                 <div class="flex justify-end space-x-2">
-                    <a href="{{ path('app_filiere_edit', {'id': filiere.id}) }}" class="p-1.5 border border-slate-300 rounded hover:bg-slate-50 text-slate-600 transition-colors">
+                    <a href="{{ path('app_filiere_edit', {'id': filiere.id}) }}" class="p-1.5 border border-slate-300 rounded hover:bg-slate-100 text-slate-700 transition-colors hover:text-gray-700">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
                     </a>
                     <a href="{{ path('app_filiere_edit', {'id': filiere.id}) }}" class="p-1.5 border border-slate-300 rounded hover:bg-red-50 text-slate-600 hover:text-red-600 transition-colors">
