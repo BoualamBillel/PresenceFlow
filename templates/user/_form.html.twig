@@ -1,0 +1,61 @@
+{{ form_start(form, {'attr': {'class': 'space-y-5', 'novalidate': 'novalidate'}}) }}
+
+    {# Champ Prénom #}
+    <div>
+        {{ form_label(form.prenom, 'PRÉNOM', {'label_attr': {'class': 'block text-[10px] font-bold text-black uppercase tracking-wider mb-1'}}) }}
+        {{ form_widget(form.prenom, {'attr': {'class': 'w-full px-3 py-3 border border-gray-400 bg-white text-black focus:outline-none focus:border-black text-sm rounded-none', 'placeholder': 'Ex: Marie'}}) }}
+        <div class="text-red-500 text-xs font-bold mt-1">{{ form_errors(form.prenom) }}</div>
+    </div>
+
+    {# Champ Nom #}
+    <div>
+        {{ form_label(form.nom, 'NOM', {'label_attr': {'class': 'block text-[10px] font-bold text-black uppercase tracking-wider mb-1'}}) }}
+        {{ form_widget(form.nom, {'attr': {'class': 'w-full px-3 py-3 border border-gray-400 bg-white text-black focus:outline-none focus:border-black text-sm rounded-none', 'placeholder': 'Ex: Curie'}}) }}
+        <div class="text-red-500 text-xs font-bold mt-1">{{ form_errors(form.nom) }}</div>
+    </div>
+
+    {# Champ Email #}
+    <div>
+        {{ form_label(form.email, 'EMAIL', {'label_attr': {'class': 'block text-[10px] font-bold text-black uppercase tracking-wider mb-1'}}) }}
+        {{ form_widget(form.email, {'attr': {'class': 'w-full px-3 py-3 border border-gray-400 bg-white text-black focus:outline-none focus:border-black text-sm rounded-none', 'placeholder': 'Ex: marie.curie@domaine.fr'}}) }}
+        <div class="text-red-500 text-xs font-bold mt-1">{{ form_errors(form.email) }}</div>
+    </div>
+
+    <hr class="border-gray-200 mt-8 mb-6">
+
+    {# Champ Rôle d'accès #}
+    <div>
+        <label class="block text-[10px] font-bold text-black uppercase tracking-wider mb-3">RÔLE D'ACCÈS</label>
+        
+        <div class="flex space-x-4">
+            {% for child in form.role %}
+                <div class="flex-1 relative">
+                    {# L'input radio est caché mais interactif (opacity-0 absolute w-full h-full cursor-pointer) #}
+                    {{ form_widget(child, {'attr': {'class': 'peer opacity-0 absolute w-full h-full cursor-pointer inset-0 m-0 z-10'}}) }}
+                    
+                    {# Le label réagit à l'état de l'input grâce à peer-checked #}
+                    {{ form_label(child, null, {
+                        'label_attr': {
+                            'class': 'block w-full text-center py-2.5 border border-black rounded-full text-xs font-bold uppercase transition-colors peer-checked:bg-black peer-checked:text-white bg-white text-black'
+                        }
+                    }) }}
+                </div>
+            {% endfor %}
+        </div>
+        <div class="text-red-500 text-xs font-bold mt-1">{{ form_errors(form.role) }}</div>
+    </div>
+
+    {# Encart d'information Mot de Passe #}
+    <div class="bg-slate-100 rounded-2xl p-5 flex items-start space-x-4 mt-8 mb-8">
+        <svg class="w-6 h-6 text-slate-700 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path></svg>
+        <p class="text-xs text-slate-600 font-medium leading-relaxed">
+            Un mot de passe temporaire sera généré et envoyé par email à l'utilisateur lors de la création du compte.
+        </p>
+    </div>
+
+    {# Bouton de Soumission #}
+    <button type="submit" class="w-full bg-[#0a0a0a] hover:bg-black text-white font-bold py-4 rounded-xl transition-colors text-sm">
+        {{ button_label|default('Créer le compte') }}
+    </button>
+
+{{ form_end(form) }}

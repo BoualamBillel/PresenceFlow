@@ -39,7 +39,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $prenom = null;
 
     #[ORM\Column]
-    private ?bool $isArchived = null;
+    private ?bool $isArchived = false;
 
     public function getId(): ?int
     {

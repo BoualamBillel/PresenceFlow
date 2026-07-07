@@ -33,28 +33,30 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         $this->getEntityManager()->flush();
     }
 
-    //    /**
-    //     * @return User[] Returns an array of User objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('u')
-    //            ->andWhere('u.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('u.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    public function findBySearchAndFilter(?string $searchTerm, string $filter): array
+    {
+        $qb = $this->createQueryBuilder('u')
+            ->orderBy('u.nom', 'ASC');
 
-    //    public function findOneBySomeField($value): ?User
-    //    {
-    //        return $this->createQueryBuilder('u')
-    //            ->andWhere('u.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+        if ($filter === 'archivés') {
+            $qb->andWhere('u.isArchived = true');
+        } else {
+            $qb->andWhere('u.isArchived = false');
+
+            if ($filter === 'formateurs') {
+                $qb->andWhere('CAST_AS_TEXT(u.roles) LIKE :role')
+                   ->setParameter('role', '%"ROLE_FORMATEUR"%');
+            } elseif ($filter === 'apprenants') {
+                $qb->andWhere('CAST_AS_TEXT(u.roles) LIKE :role')
+                   ->setParameter('role', '%"ROLE_ETUDIANT"%');
+            }
+        }
+
+        if ($searchTerm) {
+            $qb->andWhere('(LOWER(u.nom) LIKE LOWER(:search) OR LOWER(u.email) LIKE LOWER(:search) OR LOWER(u.prenom) LIKE LOWER(:search))')
+               ->setParameter('search', '%' . $searchTerm . '%');
+        }
+
+        return $qb->getQuery()->getResult();
+    }
 }
