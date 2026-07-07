@@ -1,0 +1,108 @@
+{% extends 'admin_base.html.twig' %}
+
+{% block title %}Utilisateurs - Administration{% endblock %}
+{% block header_title %}Utilisateurs{% endblock %}
+
+{% block admin_content %}
+    
+    <div class="space-y-6">
+        
+        <div>
+            <p class="text-sm font-medium text-slate-700">Gérez les profils et les accès de votre établissement.</p>
+        </div>
+
+        <form method="get" action="{{ path('app_user_index') }}" id="filter-form" class="space-y-4">
+            
+            <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </div>
+                <input type="text" name="q" value="{{ search_term }}" class="w-full pl-10 pr-4 py-3 border border-slate-300 text-sm font-medium text-slate-900 placeholder-slate-500 focus:outline-none focus:border-black rounded-none" placeholder="RECHERCHER PAR NOM, EMAIL...">
+            </div>
+
+            <a href="{{ path('app_user_new') }}" class="block w-full text-center bg-black hover:bg-slate-800 text-white font-bold py-3.5 rounded-none text-xs tracking-widest transition-colors uppercase flex items-center justify-center space-x-3">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg>
+                <span>NOUVELLE UTILISATEUR</span>
+            </a>
+
+            <div class="flex space-x-2 overflow-x-auto pb-2 scrollbar-hide">
+                <input type="hidden" name="filter" id="filter-input" value="{{ current_filter }}">
+                
+                <button type="button" onclick="document.getElementById('filter-input').value='all'; document.getElementById('filter-form').submit();" 
+                        class="px-4 py-1.5 rounded-full text-[11px] font-bold border transition-colors whitespace-nowrap {{ current_filter == 'all' ? 'bg-black text-white border-black' : 'bg-white text-slate-600 border-slate-300 hover:border-slate-400' }}">
+                    Tous
+                </button>
+                
+                <button type="button" onclick="document.getElementById('filter-input').value='formateurs'; document.getElementById('filter-form').submit();" 
+                        class="px-4 py-1.5 rounded-full text-[11px] font-bold border transition-colors whitespace-nowrap {{ current_filter == 'formateurs' ? 'bg-black text-white border-black' : 'bg-white text-slate-600 border-slate-300 hover:border-slate-400' }}">
+                    Formateurs
+                </button>
+                
+                <button type="button" onclick="document.getElementById('filter-input').value='apprenants'; document.getElementById('filter-form').submit();" 
+                        class="px-4 py-1.5 rounded-full text-[11px] font-bold border transition-colors whitespace-nowrap {{ current_filter == 'apprenants' ? 'bg-black text-white border-black' : 'bg-white text-slate-600 border-slate-300 hover:border-slate-400' }}">
+                    Apprenants
+                </button>
+                
+                <button type="button" onclick="document.getElementById('filter-input').value='archivés'; document.getElementById('filter-form').submit();" 
+                        class="px-4 py-1.5 rounded-full text-[11px] font-bold border transition-colors whitespace-nowrap {{ current_filter == 'archivés' ? 'bg-black text-white border-black' : 'bg-white text-slate-600 border-slate-300 hover:border-slate-400' }}">
+                    Archivés
+                </button>
+            </div>
+
+        </form>
+
+        <div class="border border-slate-200 bg-white">
+            {% for user in users %}
+                <a href="{{ path('app_user_edit', {'id': user.id}) }}" class="flex items-center justify-between p-4 border-b border-slate-200 last:border-b-0 hover:bg-slate-50 transition-colors group">
+                    <div class="flex items-center space-x-4">
+                        
+                        <div class="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-xs
+                            {% if 'ROLE_FORMATEUR' in user.roles %}
+                                bg-slate-200 text-slate-700
+                            {% else %}
+                                bg-blue-100 text-blue-800
+                            {% endif %}
+                        ">
+                            {{ user.prenom|first|upper }}{{ user.nom|first|upper }}
+                        </div>
+                        
+                        <div>
+                            <h3 class="text-sm font-bold text-slate-900">{{ user.prenom }} {{ user.nom }}</h3>
+                            <p class="text-xs font-medium text-slate-500 mt-0.5">
+                                {% if 'ROLE_FORMATEUR' in user.roles %}
+                                    Formateur
+                                {% else %}
+                                    Apprenant
+                                {% endif %}
+                                • Formation
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <svg class="w-5 h-5 text-slate-400 group-hover:text-black transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                </a>
+            {% else %}
+                <div class="p-8 text-center text-sm font-medium text-slate-500">
+                    Aucun utilisateur trouvé.
+                </div>
+            {% endfor %}
+        </div>
+
+        {% if total_users > limit %}
+            <div class="text-center pt-6">
+                <a href="{{ path('app_user_index', app.request.query.all|merge({'limit': limit + 5})) }}" 
+                   class="inline-block text-xs font-bold text-slate-600 hover:text-black transition-colors uppercase tracking-wider">
+                    Charger plus d'utilisateurs ({{ limit }} / {{ total_users }})
+                </a>
+            </div>
+        {% elseif total_users > 0 %}
+            <div class="text-center pt-6 pb-2">
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                    Tous les utilisateurs sont affichés
+                </span>
+            </div>
+        {% endif %}
+
+    </div>
+
+{% endblock %}
