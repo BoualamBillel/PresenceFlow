@@ -74,7 +74,6 @@
                                 {% else %}
                                     Apprenant
                                 {% endif %}
-                                {# Pour l'instant on laisse un texte générique car on n'a pas encore fait le lien avec la classe/filière #}
                                 • Formation
                             </p>
                         </div>
@@ -89,11 +88,18 @@
             {% endfor %}
         </div>
 
-        {% if users|length > 0 %}
-            <div class="text-center pt-4">
-                <button type="button" class="text-xs font-bold text-slate-600 hover:text-black transition-colors">
-                    Charger plus d'utilisateurs
-                </button>
+        {% if total_users > limit %}
+            <div class="text-center pt-6">
+                <a href="{{ path('app_user_index', app.request.query.all|merge({'limit': limit + 5})) }}" 
+                   class="inline-block text-xs font-bold text-slate-600 hover:text-black transition-colors uppercase tracking-wider">
+                    Charger plus d'utilisateurs ({{ limit }} / {{ total_users }})
+                </a>
+            </div>
+        {% elseif total_users > 0 %}
+            <div class="text-center pt-6 pb-2">
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                    Tous les utilisateurs sont affichés
+                </span>
             </div>
         {% endif %}
 

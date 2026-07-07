@@ -21,13 +21,17 @@ class UserController extends AbstractController
     {
         $searchTerm = $request->query->get('q');
         $filter = $request->query->get('filter', 'all');
+        
+        $limit = $request->query->getInt('limit', 5);
 
-        $users = $userRepository->findBySearchAndFilter($searchTerm, $filter);
+        $paginator = $userRepository->findBySearchAndFilter($searchTerm, $filter, $limit);
 
         return $this->render('user/index.html.twig', [
-            'users' => $users,
+            'users' => $paginator,
+            'total_users' => count($paginator),
             'current_filter' => $filter,
-            'search_term' => $searchTerm
+            'search_term' => $searchTerm,
+            'limit' => $limit
         ]);
     }
 
@@ -77,18 +81,13 @@ class UserController extends AbstractController
         // On récupère le premier rôle significatif pour pré-remplir le champ 'role' non-mappé
         $currentRole = !empty($user->getRoles()) ? $user->getRoles()[0] : 'ROLE_ETUDIANT';
 
-        $form = $this->createForm(UserType::class, $user, [
-            // On peut passer le rôle par défaut ici si nécessaire, 
-            // mais Symfony le fera via setData plus bas
-        ]);
+        $form = $this->createForm(UserType::class, $user, []);
         
-        // On force la valeur du bouton radio au chargement
         $form->get('role')->setData($currentRole);
 
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // On récupère le rôle choisi dans les pilules
             $selectedRole = $form->get('role')->getData();
             $user->setRoles([$selectedRole]);
 

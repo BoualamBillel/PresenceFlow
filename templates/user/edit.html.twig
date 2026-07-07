@@ -13,7 +13,6 @@
             <div class="h-0.5 w-full bg-black"></div>
         </div>
 
-        {# On réutilise le même formulaire que pour la création #}
         {{ include('user/_form.html.twig', {'button_label': 'Mettre à jour le profil'}) }}
         
         {# Zone de gestion du compte (Archivage / Suppression) #}
@@ -21,7 +20,6 @@
             <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3">Zone de gestion critique</p>
             
             <div class="space-y-3">
-                {# Exemple d'un bouton d'archivage (on pourra faire la route plus tard) #}
                 <button type="button" class="w-full bg-white hover:bg-slate-50 text-slate-900 font-bold py-3.5 px-4 border border-slate-200 rounded-xl transition-all text-xs uppercase tracking-wider text-center">
                     {{ user.isArchived ? 'Désarchiver le compte' : 'Archiver l\'utilisateur' }}
                 </button>

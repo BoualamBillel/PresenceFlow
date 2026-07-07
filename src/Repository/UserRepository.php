@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\Tools\Pagination\Paginator;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
@@ -33,11 +34,14 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         $this->getEntityManager()->flush();
     }
 
-    public function findBySearchAndFilter(?string $searchTerm, string $filter): array
+    public function findBySearchAndFilter(?string $searchTerm, string $filter, int $limit = 5): Paginator
     {
         $qb = $this->createQueryBuilder('u')
-            ->orderBy('u.nom', 'ASC');
+            ->orderBy('u.nom', 'ASC')
+            ->andWhere('CAST_AS_TEXT(u.roles) NOT LIKE :adminRole')
+            ->setParameter('adminRole', '%"ROLE_ADMIN"%');
 
+        // Gestion du filtre par statut/rôle
         if ($filter === 'archivés') {
             $qb->andWhere('u.isArchived = true');
         } else {
@@ -52,11 +56,14 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             }
         }
 
+        // Gestion de la recherche textuelle
         if ($searchTerm) {
             $qb->andWhere('(LOWER(u.nom) LIKE LOWER(:search) OR LOWER(u.email) LIKE LOWER(:search) OR LOWER(u.prenom) LIKE LOWER(:search))')
                ->setParameter('search', '%' . $searchTerm . '%');
         }
 
-        return $qb->getQuery()->getResult();
+        $qb->setMaxResults($limit);
+
+        return new Paginator($qb);
     }
 }
