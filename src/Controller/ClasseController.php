@@ -53,6 +53,42 @@ final class ClasseController extends AbstractController
         ]);
     }
 
+    #[Route('/{id}/add-students', name: 'app_classe_add_students', methods: ['GET', 'POST'])]
+    public function addStudents(
+        Request $request, 
+        Classe $classe, 
+        UserRepository $userRepository, 
+        EntityManagerInterface $entityManager
+    ): Response {
+        if ($request->isMethod('POST')) {
+            $studentIds = $request->request->all('students'); 
+
+            if (!empty($studentIds)) {
+                $addedCount = 0;
+                foreach ($studentIds as $id) {
+                    $student = $userRepository->find($id);
+                    if ($student) {
+                        $classe->addEtudiant($student);
+                        $addedCount++;
+                    }
+                }
+                $entityManager->flush();
+                $this->addFlash('success', $addedCount . ' étudiant(s) ajouté(s) à la classe.');
+            }
+
+            return $this->redirectToRoute('app_classe_show', ['id' => $classe->getId()]);
+        }
+
+        $searchTerm = $request->query->get('q');
+        $availableStudents = $userRepository->findAvailableForClasse($classe->getId(), $searchTerm);
+
+        return $this->render('classe/add_students.html.twig', [
+            'classe' => $classe,
+            'students' => $availableStudents,
+            'search_term' => $searchTerm,
+        ]);
+    }
+
     #[Route('/{id}', name: 'app_classe_show', methods: ['GET'])]
     public function show(Classe $classe): Response
     {
