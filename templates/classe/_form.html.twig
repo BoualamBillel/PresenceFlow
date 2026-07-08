@@ -1,0 +1,40 @@
+{{ form_start(form, {'attr': {'class': 'space-y-5', 'novalidate': 'novalidate'}}) }}
+
+    {# Champ Nom de la classe #}
+    <div>
+        {{ form_label(form.nom, null, {'label_attr': {'class': 'block text-[10px] font-bold text-black uppercase tracking-wider mb-1'}}) }}
+        {{ form_widget(form.nom, {'attr': {'class': 'w-full px-3 py-3 border border-gray-400 bg-white text-black focus:outline-none focus:border-black text-sm rounded-none'}}) }}
+        <div class="text-red-500 text-xs font-bold mt-1">{{ form_errors(form.nom) }}</div>
+    </div>
+
+    {# Champ Année scolaire #}
+    <div>
+        {{ form_label(form.annee, null, {'label_attr': {'class': 'block text-[10px] font-bold text-black uppercase tracking-wider mb-1'}}) }}
+        {{ form_widget(form.annee, {'attr': {'class': 'w-full px-3 py-3 border border-gray-400 bg-white text-black focus:outline-none focus:border-black text-sm rounded-none'}}) }}
+        <div class="text-red-500 text-xs font-bold mt-1">{{ form_errors(form.annee) }}</div>
+    </div>
+
+    {# Champ Filière #}
+    <div>
+        {{ form_label(form.filiere, null, {'label_attr': {'class': 'block text-[10px] font-bold text-black uppercase tracking-wider mb-1'}}) }}
+        <div class="relative">
+            {# appearance-none supprime le style natif du select #}
+            {{ form_widget(form.filiere, {'attr': {'class': 'appearance-none w-full px-3 py-3 border border-gray-400 bg-white text-black focus:outline-none focus:border-black text-sm rounded-none cursor-pointer'}}) }}
+            
+            {# Icône Chevron injectée par-dessus #}
+            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-black">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            </div>
+        </div>
+        <div class="text-red-500 text-xs font-bold mt-1">{{ form_errors(form.filiere) }}</div>
+    </div>
+
+    {# Séparateur #}
+    <hr class="border-gray-200 mt-8 mb-6">
+
+    {# Bouton de soumission #}
+    <button type="submit" class="w-full bg-[#0a0a0a] hover:bg-black text-white font-bold py-4 rounded-xl transition-colors text-sm">
+        {{ button_label|default('Créer la classe') }}
+    </button>
+
+{{ form_end(form) }}
