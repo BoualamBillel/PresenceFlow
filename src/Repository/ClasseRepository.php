@@ -16,28 +16,28 @@ class ClasseRepository extends ServiceEntityRepository
         parent::__construct($registry, Classe::class);
     }
 
-    //    /**
-    //     * @return Classe[] Returns an array of Classe objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('c')
-    //            ->andWhere('c.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('c.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    public function findBySearchAndFilter(?string $searchTerm, string $filter): array
+    {
+        $qb = $this->createQueryBuilder('c')
+            ->leftJoin('c.filiere', 'f')
+            ->addSelect('f') 
+            ->leftJoin('c.etudiants', 'e')
+            ->addSelect('e')
+            ->orderBy('c.nom', 'ASC');
 
-    //    public function findOneBySomeField($value): ?Classe
-    //    {
-    //        return $this->createQueryBuilder('c')
-    //            ->andWhere('c.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+        // Filtre de statut
+        if ($filter === 'archivees') {
+            $qb->andWhere('c.isArchived = true');
+        } else {
+            $qb->andWhere('c.isArchived = false');
+        }
+
+        // Recherche textuelle sur la classe OU la filière
+        if ($searchTerm) {
+            $qb->andWhere('(LOWER(c.nom) LIKE LOWER(:search) OR LOWER(c.annee) LIKE LOWER(:search) OR LOWER(f.nom) LIKE LOWER(:search))')
+               ->setParameter('search', '%' . $searchTerm . '%');
+        }
+
+        return $qb->getQuery()->getResult();
+    }
 }

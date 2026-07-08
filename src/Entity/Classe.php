@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\ClasseRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ClasseRepository::class)]
@@ -25,6 +27,17 @@ class Classe
     #[ORM\ManyToOne(inversedBy: 'classes')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Filiere $filiere = null;
+
+    /**
+     * @var Collection<int, User>
+     */
+    #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'classes')]
+    private Collection $etudiants;
+
+    public function __construct()
+    {
+        $this->etudiants = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -75,6 +88,30 @@ class Classe
     public function setFiliere(?Filiere $filiere): static
     {
         $this->filiere = $filiere;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, User>
+     */
+    public function getEtudiants(): Collection
+    {
+        return $this->etudiants;
+    }
+
+    public function addEtudiant(User $etudiant): static
+    {
+        if (!$this->etudiants->contains($etudiant)) {
+            $this->etudiants->add($etudiant);
+        }
+
+        return $this;
+    }
+
+    public function removeEtudiant(User $etudiant): static
+    {
+        $this->etudiants->removeElement($etudiant);
 
         return $this;
     }

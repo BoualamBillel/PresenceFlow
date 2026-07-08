@@ -15,10 +15,17 @@ use Symfony\Component\Routing\Attribute\Route;
 final class ClasseController extends AbstractController
 {
     #[Route(name: 'app_classe_index', methods: ['GET'])]
-    public function index(ClasseRepository $classeRepository): Response
+   public function index(Request $request, ClasseRepository $classeRepository): Response
     {
+        $searchTerm = $request->query->get('q');
+        $filter = $request->query->get('filter', 'actives');
+
+        $classes = $classeRepository->findBySearchAndFilter($searchTerm, $filter);
+
         return $this->render('classe/index.html.twig', [
-            'classes' => $classeRepository->findAll(),
+            'classes' => $classes,
+            'search_term' => $searchTerm,
+            'current_filter' => $filter,
         ]);
     }
 
@@ -33,7 +40,7 @@ final class ClasseController extends AbstractController
             $entityManager->persist($classe);
             $entityManager->flush();
 
-            $this->addFlash('success', 'La classe "' . $classe->getNom() . '" a été supprimée avec succès.');
+            $this->addFlash('success', 'La classe "' . $classe->getNom() . '" a été créée avec succès.');
 
 
             return $this->redirectToRoute('app_classe_index', [], Response::HTTP_SEE_OTHER);
