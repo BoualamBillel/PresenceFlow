@@ -1,0 +1,22 @@
+{% extends 'admin_base.html.twig' %}
+
+{% block title %}Planning & Sessions - Administration{% endblock %}
+{% block header_title %}Planning & Sessions{% endblock %}
+
+{% block admin_content %}
+    <div class="space-y-6">
+        <div>
+            <h2 class="text-xl font-black text-black tracking-tight">Planning & Sessions</h2>
+            <p class="text-sm font-medium text-slate-700 underline decoration-2 underline-offset-4">Gestion des plannings et des sessions</p>
+        </div>
+
+        <a href="{{ path('app_session_cours_new') }}" class="block w-full text-center bg-black hover:bg-slate-800 text-white font-bold py-3.5 rounded-none text-xs tracking-widest transition-colors uppercase">
+            + NOUVELLE SESSION
+        </a>
+
+        <div class="mt-8 border border-dashed border-gray-400 p-4 rounded-xl text-center">
+            <p class="text-xs text-gray-500 font-bold uppercase tracking-wider mb-2">Debug de la Base de Données</p>
+            <p class="text-sm text-black">{{ sessions|length }} session(s) planifiée(s) en base.</p>
+        </div>
+    </div>
+{% endblock %}

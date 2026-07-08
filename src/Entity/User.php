@@ -49,9 +49,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\ManyToMany(targetEntity: Classe::class, mappedBy: 'etudiants')]
     private Collection $classes;
 
+    /**
+     * @var Collection<int, SessionCours>
+     */
+    #[ORM\OneToMany(targetEntity: SessionCours::class, mappedBy: 'formateur')]
+    private Collection $sessionsFormateur;
+
     public function __construct()
     {
         $this->classes = new ArrayCollection();
+        $this->sessionsFormateur = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -187,6 +194,36 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         if ($this->classes->removeElement($class)) {
             $class->removeEtudiant($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, SessionCours>
+     */
+    public function getSessionsFormateur(): Collection
+    {
+        return $this->sessionsFormateur;
+    }
+
+    public function addSessionsFormateur(SessionCours $sessionsFormateur): static
+    {
+        if (!$this->sessionsFormateur->contains($sessionsFormateur)) {
+            $this->sessionsFormateur->add($sessionsFormateur);
+            $sessionsFormateur->setFormateur($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSessionsFormateur(SessionCours $sessionsFormateur): static
+    {
+        if ($this->sessionsFormateur->removeElement($sessionsFormateur)) {
+            // set the owning side to null (unless already changed)
+            if ($sessionsFormateur->getFormateur() === $this) {
+                $sessionsFormateur->setFormateur(null);
+            }
         }
 
         return $this;
