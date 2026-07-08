@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Classe;
 use App\Form\ClasseType;
 use App\Repository\ClasseRepository;
+use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -87,5 +88,29 @@ final class ClasseController extends AbstractController
         }
 
         return $this->redirectToRoute('app_classe_index', [], Response::HTTP_SEE_OTHER);
+    }
+
+    #[Route('/{id}/remove-student/{studentId}', name: 'app_classe_remove_student', methods: ['POST'])]
+    public function removeStudent(
+        Request $request, 
+        Classe $classe, 
+        int $studentId, 
+        UserRepository $userRepository, 
+        EntityManagerInterface $entityManager
+    ): Response {
+        if ($this->isCsrfTokenValid('remove'.$studentId, $request->request->get('_token'))) {
+            
+            $student = $userRepository->find($studentId);
+            
+            if ($student) {
+                // Rupture de la relation ManyToMany
+                $classe->removeEtudiant($student);
+                $entityManager->flush();
+                
+                $this->addFlash('success', $student->getPrenom() . ' a été retiré(e) de la classe.');
+            }
+        }
+
+        return $this->redirectToRoute('app_classe_show', ['id' => $classe->getId()], Response::HTTP_SEE_OTHER);
     }
 }
