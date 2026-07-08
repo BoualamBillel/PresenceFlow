@@ -66,4 +66,25 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
 
         return new Paginator($qb);
     }
+
+    /**
+     * Récupère les étudiants actifs qui ne sont PAS encore dans la classe donnée.
+     */
+    public function findAvailableForClasse(int $classeId, ?string $searchTerm = null): array
+    {
+        $qb = $this->createQueryBuilder('u')
+            ->andWhere('CAST_AS_TEXT(u.roles) LIKE :role')
+            ->andWhere('u.isArchived = false')
+            ->setParameter('role', '%"ROLE_ETUDIANT"%')
+            ->andWhere(':classeId NOT MEMBER OF u.classes')
+            ->setParameter('classeId', $classeId)
+            ->orderBy('u.nom', 'ASC');
+
+        if ($searchTerm) {
+            $qb->andWhere('(LOWER(u.nom) LIKE LOWER(:search) OR LOWER(u.prenom) LIKE LOWER(:search) OR LOWER(u.email) LIKE LOWER(:search))')
+               ->setParameter('search', '%' . $searchTerm . '%');
+        }
+
+        return $qb->getQuery()->getResult();
+    }
 }
