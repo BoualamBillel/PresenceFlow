@@ -58,7 +58,7 @@
     <hr class="border-gray-200 mt-6 mb-4">
 
     <button type="submit" class="w-full bg-[#0a0a0a] hover:bg-black text-white font-bold py-4 rounded-xl transition-colors text-sm">
-        Créer la session
+        {{ button_label|default('Créer la session') }}
     </button>
 
 {{ form_end(form) }}

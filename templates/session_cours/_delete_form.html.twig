@@ -1,0 +1,6 @@
+<form method="post" action="{{ path('app_session_cours_delete', {'id': session.id}) }}" onsubmit="return confirm('Action irréversible. Êtes-vous sûr de vouloir supprimer cette session ?');">
+    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ session.id) }}">
+    <button type="submit" class="w-full bg-white hover:bg-red-50 text-red-600 font-bold py-3.5 px-4 border border-red-200 rounded-xl transition-all text-xs uppercase tracking-wider text-center">
+        Supprimer la session
+    </button>
+</form>

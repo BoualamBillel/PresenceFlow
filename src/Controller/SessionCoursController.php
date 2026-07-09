@@ -62,4 +62,39 @@ class SessionCoursController extends AbstractController
             'form' => $form,
         ]);
     }
+
+    #[Route('/{id}/edit', name: 'app_session_cours_edit', methods: ['GET', 'POST'])]
+    public function edit(Request $request, SessionCours $session, EntityManagerInterface $entityManager): Response
+    {
+        $form = $this->createForm(SessionCoursType::class, $session);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $entityManager->flush();
+            $this->addFlash('success', 'Le créneau a été mis à jour avec succès.');
+
+            return $this->redirectToRoute('app_session_cours_index', ['date' => $session->getDateCours()->format('Y-m-d')], Response::HTTP_SEE_OTHER);
+        }
+
+        return $this->render('session_cours/edit.html.twig', [
+            'session' => $session,
+            'form' => $form,
+        ]);
+    }
+
+    #[Route('/{id}', name: 'app_session_cours_delete', methods: ['POST'])]
+    public function delete(Request $request, SessionCours $session, EntityManagerInterface $entityManager): Response
+    {
+        if ($this->isCsrfTokenValid('delete'.$session->getId(), $request->request->get('_token'))) {
+            $dateRedirect = $session->getDateCours()->format('Y-m-d');
+            
+            $entityManager->remove($session);
+            $entityManager->flush();
+            $this->addFlash('success', 'La session a été supprimée définitivement.');
+            
+            return $this->redirectToRoute('app_session_cours_index', ['date' => $dateRedirect], Response::HTTP_SEE_OTHER);
+        }
+
+        return $this->redirectToRoute('app_session_cours_index', [], Response::HTTP_SEE_OTHER);
+    }
 }
