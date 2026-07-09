@@ -41,6 +41,12 @@ class SessionCours
     #[ORM\JoinColumn(nullable: false)]
     private ?Matiere $matiere = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $qrCodeToken = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $qrTokenExpiresAt = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -175,5 +181,55 @@ class SessionCours
         } else {
             return 'TERMINE';
         }
+    }
+
+    public function getQrCodeToken(): ?string
+    {
+        return $this->qrCodeToken;
+    }
+
+    public function setQrCodeToken(?string $qrCodeToken): static
+    {
+        $this->qrCodeToken = $qrCodeToken;
+
+        return $this;
+    }
+
+    public function getQrTokenExpiresAt(): ?\DateTimeImmutable
+    {
+        return $this->qrTokenExpiresAt;
+    }
+
+    public function setQrTokenExpiresAt(?\DateTimeImmutable $qrTokenExpiresAt): static
+    {
+        $this->qrTokenExpiresAt = $qrTokenExpiresAt;
+
+        return $this;
+    }
+
+    /**
+     * Génère un nouveau jeton de sécurité pour l'émargement (valide 5 minutes)
+     */
+    public function generateNewQrToken(): void
+    {
+        // Génération d'une chaîne hexadécimale sécurisée de 32 caractères
+        $this->qrCodeToken = bin2hex(random_bytes(16));
+        
+        // Expiration définie à +5 minutes par rapport à l'heure du serveur (Paris)
+        $now = new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris'));
+        $this->qrTokenExpiresAt = $now->modify('+5 minutes');
+    }
+
+    /**
+     * Vérifie si le jeton actuel est toujours valide
+     */
+    public function isQrTokenValid(): bool
+    {
+        if (!$this->qrCodeToken || !$this->qrTokenExpiresAt) {
+            return false;
+        }
+
+        $now = new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris'));
+        return $this->qrTokenExpiresAt > $now;
     }
 }
