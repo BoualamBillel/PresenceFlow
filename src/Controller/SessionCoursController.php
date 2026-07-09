@@ -15,10 +15,28 @@ use Symfony\Component\Routing\Attribute\Route;
 class SessionCoursController extends AbstractController
 {
     #[Route('/', name: 'app_session_cours_index', methods: ['GET'])]
-    public function index(SessionCoursRepository $sessionCoursRepository): Response
+   public function index(Request $request, SessionCoursRepository $sessionCoursRepository): Response
     {
+        $dateParam = $request->query->get('date');
+        try {
+            $selectedDate = $dateParam ? new \DateTimeImmutable($dateParam) : new \DateTimeImmutable('today');
+        } catch (\Exception $e) {
+            $selectedDate = new \DateTimeImmutable('today');
+        }
+
+        // Génére l'axe temporel du carrousel (3 jours avant, 11 jours après)
+        $daysCarousel = [];
+        $anchorDate = (new \DateTimeImmutable('today'))->modify('-3 days');
+        for ($i = 0; $i < 14; $i++) {
+            $daysCarousel[] = $anchorDate->modify("+$i days");
+        }
+
+        $sessions = $sessionCoursRepository->findSessionsByDate($selectedDate);
+
         return $this->render('session_cours/index.html.twig', [
-            'sessions' => $sessionCoursRepository->findAll(),
+            'sessions' => $sessions,
+            'days_carousel' => $daysCarousel,
+            'selected_date' => $selectedDate->format('Y-m-d'),
         ]);
     }
 

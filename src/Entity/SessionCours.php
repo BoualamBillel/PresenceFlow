@@ -141,4 +141,39 @@ class SessionCours
 
         return $this;
     }
+
+   /**
+     * Déduit dynamiquement le statut de la session (Comparaison stricte par chaînes)
+     */
+    public function getStatut(): string
+    {
+        if (!$this->dateCours || !$this->heureDebut || !$this->heureFin) {
+            return 'INCONNU';
+        }
+
+        $now = new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris'));
+        
+        $todayStr = $now->format('Y-m-d');
+        $currentTime = $now->format('H:i:s');
+
+        $sessionDateStr = $this->dateCours->format('Y-m-d');
+        $debut = $this->heureDebut->format('H:i:s');
+        $fin = $this->heureFin->format('H:i:s');
+
+        if ($sessionDateStr > $todayStr) {
+            return 'A_VENIR';
+        }
+        
+        if ($sessionDateStr < $todayStr) {
+            return 'TERMINE';
+        }
+
+        if ($currentTime < $debut) {
+            return 'A_VENIR';
+        } elseif ($currentTime >= $debut && $currentTime <= $fin) {
+            return 'EN_COURS';
+        } else {
+            return 'TERMINE';
+        }
+    }
 }

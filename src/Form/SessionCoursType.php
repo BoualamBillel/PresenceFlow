@@ -32,6 +32,9 @@ class SessionCoursType extends AbstractType
                 'widget' => 'single_text',
                 'input' => 'datetime_immutable',
                 'label' => 'DATE',
+                'attr' => [
+                    'min' => (new \DateTimeImmutable())->format('Y-m-d') 
+                ]
             ])
             ->add('heureDebut', TimeType::class, [
                 'widget' => 'single_text',

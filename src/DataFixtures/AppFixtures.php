@@ -2,7 +2,9 @@
 
 namespace App\DataFixtures;
 
+use App\Entity\Classe;
 use App\Entity\Matiere;
+use App\Entity\SessionCours;
 use App\Entity\User;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
@@ -52,6 +54,68 @@ class AppFixtures extends Fixture
             }
 
             $manager->persist($matiere);
+        }
+
+        $userRepo = $manager->getRepository(User::class);
+        $classeRepo = $manager->getRepository(Classe::class);
+
+        $marie = $userRepo->findOneBy(['email' => 'marie@curie.fr']);
+        $arnault = $userRepo->findOneBy(['email' => 'Arnault@Arnault.fr']);
+        $classes = $classeRepo->findAll();
+
+        if ($marie && $arnault && count($classes) > 0) {
+            $classeParDefaut = $classes[0]; // On prend la première classe trouvée
+            $matieres = $manager->getRepository(Matiere::class)->findAll();
+
+            $sessionsData = [
+                [
+                    'date' => '-1 day',
+                    'debut' => '09:00:00',
+                    'fin' => '12:30:00',
+                    'formateur' => $marie,
+                    'matiere' => $matieres[0] ?? $matiere,
+                    'salle' => 'Amphi Turing'
+                ],
+                [
+                    'date' => 'today',
+                    'debut' => '08:00:00',
+                    'fin' => '12:00:00',
+                    'formateur' => $arnault,
+                    'matiere' => $matieres[1] ?? $matiere,
+                    'salle' => 'Salle 304'
+                ],
+                [
+                    'date' => 'today',
+                    'debut' => '14:00:00',
+                    'fin' => '17:30:00',
+                    'formateur' => $marie,
+                    'matiere' => $matieres[2] ?? $matiere,
+                    'salle' => 'Amphi Lovelace'
+                ],
+                [
+                    'date' => '+1 day',
+                    'debut' => '09:00:00',
+                    'fin' => '12:30:00',
+                    'formateur' => $arnault,
+                    'matiere' => $matieres[3] ?? $matiere,
+                    'salle' => 'Salle 305'
+                ]
+            ];
+
+            foreach ($sessionsData as $data) {
+                $session = new SessionCours();
+                $session->setDateCours(new \DateTimeImmutable($data['date']));
+                $session->setHeureDebut(new \DateTimeImmutable($data['debut']));
+                $session->setHeureFin(new \DateTimeImmutable($data['fin']));
+                $session->setToleranceRetard(15);
+                $session->setEmplacement($data['salle']);
+
+                $session->setFormateur($data['formateur']);
+                $session->setMatiere($data['matiere']);
+                $session->setClasse($classeParDefaut);
+
+                $manager->persist($session);
+            }
         }
 
 
