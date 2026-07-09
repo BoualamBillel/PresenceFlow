@@ -15,8 +15,13 @@ use Symfony\Component\Routing\Attribute\Route;
 class SessionCoursController extends AbstractController
 {
     #[Route('/', name: 'app_session_cours_index', methods: ['GET'])]
-   public function index(Request $request, SessionCoursRepository $sessionCoursRepository): Response
-    {
+  public function index(
+        Request $request, 
+        SessionCoursRepository $sessionCoursRepository,
+        \App\Repository\ClasseRepository $classeRepo,
+        \App\Repository\UserRepository $userRepo
+    ): Response {
+        
         $dateParam = $request->query->get('date');
         try {
             $selectedDate = $dateParam ? new \DateTimeImmutable($dateParam) : new \DateTimeImmutable('today');
@@ -24,19 +29,39 @@ class SessionCoursController extends AbstractController
             $selectedDate = new \DateTimeImmutable('today');
         }
 
-        // Génére l'axe temporel du carrousel (3 jours avant, 11 jours après)
+        // Récupération des filtres actifs
+        $classeId = $request->query->get('classe');
+        $formateurId = $request->query->get('formateur');
+
         $daysCarousel = [];
         $anchorDate = (new \DateTimeImmutable('today'))->modify('-3 days');
         for ($i = 0; $i < 14; $i++) {
             $daysCarousel[] = $anchorDate->modify("+$i days");
         }
 
-        $sessions = $sessionCoursRepository->findSessionsByDate($selectedDate);
+        // Requête filtrée
+        $sessions = $sessionCoursRepository->findSessionsByDate(
+            $selectedDate, 
+            $classeId ? (int)$classeId : null, 
+            $formateurId ? (int)$formateurId : null
+        );
+
+        $classes = $classeRepo->findAll();
+        $formateurs = $userRepo->createQueryBuilder('u')
+            ->andWhere('CAST_AS_TEXT(u.roles) LIKE :role')
+            ->andWhere('u.isArchived = false')
+            ->setParameter('role', '%"ROLE_FORMATEUR"%')
+            ->orderBy('u.nom', 'ASC')
+            ->getQuery()->getResult();
 
         return $this->render('session_cours/index.html.twig', [
             'sessions' => $sessions,
             'days_carousel' => $daysCarousel,
             'selected_date' => $selectedDate->format('Y-m-d'),
+            'classes' => $classes,
+            'formateurs' => $formateurs,
+            'current_classe' => $classeId,
+            'current_formateur' => $formateurId,
         ]);
     }
 

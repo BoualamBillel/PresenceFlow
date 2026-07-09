@@ -17,20 +17,29 @@ class SessionCoursRepository extends ServiceEntityRepository
     }
 
     /**
-     * Récupère les sessions d'une date spécifique avec optimisation des jointures
+     * Récupère les sessions d'une date spécifique avec filtres optionnels
      */
-    public function findSessionsByDate(\DateTimeImmutable $date): array
+    public function findSessionsByDate(\DateTimeImmutable $date, ?int $classeId = null, ?int $formateurId = null): array
     {
-        return $this->createQueryBuilder('s')
-            ->leftJoin('s.matiere', 'm')
-            ->addSelect('m')
-            ->leftJoin('s.classe', 'c')
-            ->addSelect('c')
-            ->leftJoin('s.formateur', 'f')
-            ->addSelect('f')
+        $qb = $this->createQueryBuilder('s')
+            ->leftJoin('s.matiere', 'm')->addSelect('m')
+            ->leftJoin('s.classe', 'c')->addSelect('c')
+            ->leftJoin('s.formateur', 'f')->addSelect('f')
             ->andWhere('s.dateCours = :date')
-            ->setParameter('date', $date->format('Y-m-d'))
-            ->orderBy('s.heureDebut', 'ASC')
+            ->setParameter('date', $date->format('Y-m-d'));
+
+        // Injection dynamique des filtres si présents
+        if ($classeId) {
+            $qb->andWhere('c.id = :classeId')
+               ->setParameter('classeId', $classeId);
+        }
+
+        if ($formateurId) {
+            $qb->andWhere('f.id = :formateurId')
+               ->setParameter('formateurId', $formateurId);
+        }
+
+        return $qb->orderBy('s.heureDebut', 'ASC')
             ->getQuery()
             ->getResult();
     }

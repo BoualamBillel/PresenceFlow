@@ -14,30 +14,30 @@
 		</div>
 
 		{% set frDays = {'Mon': 'LUN', 'Tue': 'MAR', 'Wed': 'MER', 'Thu': 'JEU', 'Fri': 'VEN', 'Sat': 'SAM', 'Sun': 'DIM'} %}
+        
+        <div class="flex overflow-x-auto space-x-3 pb-2 snap-x snap-mandatory [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {% for day in days_carousel %}
+                {% set isCurrent = (day.format('Y-m-d') == selected_date) %}
+                {% set dayLabel = frDays[day.format('D')]|default(day.format('D')) %}
+                
+                <a href="{{ path('app_session_cours_index', app.request.query.all|merge({'date': day.format('Y-m-d')})) }}" 
+                   class="snap-center shrink-0 w-16 py-3 border rounded-xl flex flex-col items-center justify-center transition-all 
+                          {{ isCurrent ? 'bg-black border-black text-white shadow-md font-black' : 'bg-white border-gray-300 text-black hover:border-black' }}">
+                    <span class="text-[10px] uppercase tracking-wider {{ isCurrent ? 'text-gray-300' : 'text-gray-500' }}">{{ dayLabel }}</span>
+                    <span class="text-lg font-bold mt-0.5">{{ day.format('d') }}</span>
+                </a>
+            {% endfor %}
+        </div>
 
-		<div class="flex overflow-x-auto space-x-3 pb-2 snap-x snap-mandatory [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-			{% for day in days_carousel %}
-				{% set isCurrent = (day.format('Y-m-d') == selected_date) %}
-				{% set dayLabel = frDays[day.format('D')]|default(day.format('D')) %}
+        <a href="{{ path('app_session_cours_new') }}" class="block w-full text-center bg-black hover:bg-slate-800 text-white font-bold py-3.5 rounded-none text-xs tracking-widest transition-colors uppercase">
+            + NOUVELLE SESSION
+        </a>
 
-				<a href="{{ path('app_session_cours_index', {'date': day.format('Y-m-d')}) }}" class="snap-center shrink-0 w-16 py-3 border rounded-xl flex flex-col items-center justify-center transition-all
-						                          {{ isCurrent ? 'bg-black border-black text-white shadow-md font-black' : 'bg-white border-gray-300 text-black hover:border-black' }}">
-					<span class="text-[10px] uppercase tracking-wider {{ isCurrent ? 'text-gray-300' : 'text-gray-500' }}">{{ dayLabel }}</span>
-					<span class="text-lg font-bold mt-0.5">{{ day.format('d') }}</span>
-				</a>
-			{% endfor %}
-		</div>
-
-		<a href="{{ path('app_session_cours_new') }}" class="block w-full text-center bg-black hover:bg-slate-800 text-white font-bold py-3.5 rounded-none text-xs tracking-widest transition-colors uppercase">
-			+ NOUVELLE SESSION
-		</a>
-
-		<button type="button" class="w-full border border-gray-300 bg-white text-black py-3 px-4 text-xs font-bold uppercase tracking-wider flex items-center justify-center space-x-2 hover:border-black transition-colors">
-			<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
-				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
-			</svg>
-			<span>Filtrer par Classe ou Formateur</span>
-		</button>
+        {% set isFilterActive = current_classe or current_formateur %}
+        <button type="button" onclick="openFilterModal()" class="w-full border {{ isFilterActive ? 'border-black bg-black text-white' : 'border-gray-300 bg-white text-black' }} py-3 px-4 text-xs font-bold uppercase tracking-wider flex items-center justify-center space-x-2 transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
+            <span>{{ isFilterActive ? 'Filtres actifs (Cliquez pour modifier)' : 'Filtrer par Classe ou Formateur' }}</span>
+        </button>
 
 		<div class="space-y-4 mt-2">
 			{% for session in sessions %}
@@ -117,6 +117,75 @@
 		</div>
 
 	</div>
+
+	<div id="filter-modal" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 transition-opacity opacity-0">
+        <div class="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl transform scale-95 transition-transform duration-200" id="filter-modal-content">
+            
+            <div class="mb-6 flex justify-between items-center">
+                <h3 class="text-xl font-black text-black">Filtrer les sessions</h3>
+                <button type="button" onclick="closeFilterModal()" class="text-gray-400 hover:text-black">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+
+            <form method="get" action="{{ path('app_session_cours_index') }}" class="space-y-4">
+                <input type="hidden" name="date" value="{{ selected_date }}">
+
+                <div>
+                    <label class="block text-[10px] font-bold text-black uppercase tracking-wider mb-1">Classe</label>
+                    <select name="classe" class="appearance-none w-full px-3 py-3 border border-gray-400 bg-white text-black text-sm rounded-none focus:outline-none focus:border-black">
+                        <option value="">Toutes les classes</option>
+                        {% for classe in classes %}
+                            <option value="{{ classe.id }}" {{ current_classe == classe.id ? 'selected' : '' }}>{{ classe.nom }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-bold text-black uppercase tracking-wider mb-1">Formateur</label>
+                    <select name="formateur" class="appearance-none w-full px-3 py-3 border border-gray-400 bg-white text-black text-sm rounded-none focus:outline-none focus:border-black">
+                        <option value="">Tous les formateurs</option>
+                        {% for formateur in formateurs %}
+                            <option value="{{ formateur.id }}" {{ current_formateur == formateur.id ? 'selected' : '' }}>{{ formateur.prenom }} {{ formateur.nom }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="pt-4 flex space-x-3">
+                    <a href="{{ path('app_session_cours_index', {'date': selected_date}) }}" class="flex-1 bg-gray-100 hover:bg-gray-200 text-black text-center font-bold py-3.5 rounded-xl transition-colors text-xs uppercase tracking-wider">
+                        Réinitialiser
+                    </a>
+                    <button type="submit" class="flex-1 bg-black hover:bg-slate-800 text-white font-bold py-3.5 rounded-xl transition-colors text-xs uppercase tracking-wider">
+                        Appliquer
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openFilterModal() {
+            const modal = document.getElementById('filter-modal');
+            const content = document.getElementById('filter-modal-content');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                content.classList.remove('scale-95');
+                content.classList.add('scale-100');
+            }, 10);
+        }
+
+        function closeFilterModal() {
+            const modal = document.getElementById('filter-modal');
+            const content = document.getElementById('filter-modal-content');
+            modal.classList.add('opacity-0');
+            content.classList.remove('scale-100');
+            content.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 200);
+        }
+    </script>
 
     <div id="delete-session-modal" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 transition-opacity opacity-0">
         <div class="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl transform scale-95 transition-transform duration-200" id="delete-session-modal-content">
