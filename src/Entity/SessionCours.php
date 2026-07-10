@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\SessionCoursRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -46,6 +48,17 @@ class SessionCours
 
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $qrTokenExpiresAt = null;
+
+    /**
+     * @var Collection<int, Emargement>
+     */
+    #[ORM\OneToMany(targetEntity: Emargement::class, mappedBy: 'session', orphanRemoval: true)]
+    private Collection $emargements;
+
+    public function __construct()
+    {
+        $this->emargements = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -231,5 +244,35 @@ class SessionCours
 
         $now = new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris'));
         return $this->qrTokenExpiresAt > $now;
+    }
+
+    /**
+     * @return Collection<int, Emargement>
+     */
+    public function getEmargements(): Collection
+    {
+        return $this->emargements;
+    }
+
+    public function addEmargement(Emargement $emargement): static
+    {
+        if (!$this->emargements->contains($emargement)) {
+            $this->emargements->add($emargement);
+            $emargement->setSession($this);
+        }
+
+        return $this;
+    }
+
+    public function removeEmargement(Emargement $emargement): static
+    {
+        if ($this->emargements->removeElement($emargement)) {
+            // set the owning side to null (unless already changed)
+            if ($emargement->getSession() === $this) {
+                $emargement->setSession(null);
+            }
+        }
+
+        return $this;
     }
 }
