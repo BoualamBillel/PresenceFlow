@@ -1,5 +1,4 @@
 <?php
-// src/Controller/FormateurSessionController.php
 
 namespace App\Controller;
 
@@ -8,6 +7,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Endroid\QrCode\Builder\Builder;
 use Endroid\QrCode\Writer\SvgWriter;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -21,7 +21,6 @@ class FormateurSessionController extends AbstractController
     {
         $user = $this->getUser();
         
-        // Sécurité d'accès au niveau du rôle
         if (!$user || !in_array('ROLE_FORMATEUR', $user->getRoles())) {
             throw $this->createAccessDeniedException("Accès non autorisé : Vous devez être formateur.");
         }
@@ -30,7 +29,6 @@ class FormateurSessionController extends AbstractController
         $today = $now->format('Y-m-d');
         $currentTime = $now->format('H:i:s');
 
-        // Récupération de toutes les sessions du formateur prévues pour aujourd'hui
         $sessions = $em->getRepository(SessionCours::class)->createQueryBuilder('s')
             ->andWhere('s.formateur = :formateur')
             ->andWhere('s.dateCours = :today')
@@ -42,15 +40,13 @@ class FormateurSessionController extends AbstractController
 
         $currentSession = null;
 
-        // Analyse temporelle pour trouver le cours actif ou le prochain à venir
         foreach ($sessions as $session) {
             if ($currentTime <= $session->getHeureFin()->format('H:i:s')) {
                 $currentSession = $session;
-                break; // On a trouvé le cours le plus pertinent pour le moment T
+                break;
             }
         }
 
-        // ÉTAT : Aucun cours restant ou prévu aujourd'hui (Affichage vide conforme)
         if (!$currentSession) {
             return $this->render('formateur/session_show.html.twig', [
                 'session' => null,
@@ -60,14 +56,12 @@ class FormateurSessionController extends AbstractController
             ]);
         }
 
-        // Calcul de la fenêtre d'ouverture (Heure de début - 15 minutes)
         $debutAutorise = $currentSession->getHeureDebut()->modify('-15 minutes')->format('H:i:s');
         $isStartable = $currentTime >= $debutAutorise;
 
         $qrCodeUri = null;
         $timeLeft = 0;
 
-        // Si la session est lancée et que le jeton de sécurité est valide
         if ($currentSession->getQrCodeToken() && $currentSession->isQrTokenValid()) {
             
             $signerUrl = $this->generateUrl(
@@ -96,7 +90,7 @@ class FormateurSessionController extends AbstractController
         ]);
     }
 
-    #[Route('/session/{id}/lancer', name: 'app_formateur_session_start', methods: ['POST'])]
+   #[Route('/session/{id}/lancer', name: 'app_formateur_session_start', methods: ['POST'])]
     public function start(Request $request, SessionCours $session, EntityManagerInterface $em): Response
     {
         $user = $this->getUser();
@@ -108,24 +102,77 @@ class FormateurSessionController extends AbstractController
         $currentTime = $now->format('H:i:s');
         $debutAutorise = $session->getHeureDebut()->modify('-15 minutes')->format('H:i:s');
 
-        // Sécurité redondante côté serveur face aux injections HTTP POST directes
         if ($session->getDateCours()->format('Y-m-d') !== $now->format('Y-m-d') || $currentTime < $debutAutorise) {
             $this->addFlash('error', 'Action impossible hors des plages horaires autorisées.');
             return $this->redirectToRoute('app_formateur_dashboard');
         }
 
         if ($this->isCsrfTokenValid('start'.$session->getId(), $request->request->get('_token'))) {
+            // 1. Génération du token QR Code
             $session->generateNewQrToken();
+
+            // 2. Initialisation dynamique des fiches d'émergement pour chaque élève de la classe
+            $classe = $session->getClasse();
+            if ($classe) {
+                foreach ($classe->getEtudiants() as $etudiant) {
+                    // Sécurité anti-doublon si le formateur clique plusieurs fois sur le bouton
+                    $existingEmargement = $em->getRepository(\App\Entity\Emargement::class)->findOneBy([
+                        'session' => $session,
+                        'etudiant' => $etudiant
+                    ]);
+
+                    if (!$existingEmargement) {
+                        $emargement = new \App\Entity\Emargement();
+                        $emargement->setSession($session);
+                        $emargement->setEtudiant($etudiant);
+                        $emargement->setStatut('EN_ATTENTE'); // Statut initialisation
+                        $em->persist($emargement);
+                    }
+                }
+            }
+
             $em->flush();
         }
 
         return $this->redirectToRoute('app_formateur_dashboard');
     }
 
-    #[Route('/signer/{token}', name: 'app_etudiant_signer', methods: ['GET'])]
-    public function mockSigner(string $token): Response
+    #[Route('/session/{id}/refresh-qr', name: 'app_formateur_session_refresh_qr', methods: ['POST'])]
+    public function refreshQr(Request $request, SessionCours $session, EntityManagerInterface $em): JsonResponse
     {
-        return new Response('Page de signature pour le token : ' . $token);
+        $user = $this->getUser();
+        if (!$user || $session->getFormateur() !== $user) {
+            return $this->json(['error' => 'Non autorisé'], 403);
+        }
+
+        $data = json_decode($request->getContent(), true);
+        if (!$this->isCsrfTokenValid('refresh'.$session->getId(), $data['_token'] ?? '')) {
+            return $this->json(['error' => 'Token invalide'], 400);
+        }
+
+        $session->generateNewQrToken();
+        $em->flush();
+
+        $signerUrl = $this->generateUrl(
+            'app_etudiant_signer', 
+            ['token' => $session->getQrCodeToken()], 
+            UrlGeneratorInterface::ABSOLUTE_URL
+        );
+
+        $builder = new Builder(
+            writer: new SvgWriter(),
+            data: $signerUrl,
+            size: 300,
+            margin: 10
+        );
+
+        $now = new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris'));
+        $timeLeft = $session->getQrTokenExpiresAt()->getTimestamp() - $now->getTimestamp();
+
+        return $this->json([
+            'qr_code_uri' => $builder->build()->getDataUri(),
+            'time_left' => max(0, $timeLeft)
+        ]);
     }
 
     #[Route('/emargement/{id}/modifier', name: 'app_formateur_emargement_modifier', methods: ['POST'])]
@@ -138,7 +185,6 @@ class FormateurSessionController extends AbstractController
             throw $this->createAccessDeniedException("Action interdite : vous ne gérez pas cette session.");
         }
 
-        // Vérification du jeton CSRF unique généré pour cette ligne d'émargement
         if ($this->isCsrfTokenValid('modifier'.$emargement->getId(), $request->request->get('_token'))) {
             $nouveauStatut = $request->request->get('statut');
             $statutsValides = ['PRESENT', 'RETARD', 'ABSENT', 'EN_ATTENTE'];
@@ -146,7 +192,6 @@ class FormateurSessionController extends AbstractController
             if (in_array($nouveauStatut, $statutsValides)) {
                 $emargement->setStatut($nouveauStatut);
                 
-                // Si on le marque présent/retard manuellement, on horodate à l'instant T si c'était vide
                 if (!$emargement->getHeureSignature() && in_array($nouveauStatut, ['PRESENT', 'RETARD'])) {
                     $now = new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris'));
                     $emargement->setHeureSignature($now);

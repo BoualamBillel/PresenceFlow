@@ -1,0 +1,82 @@
+{% extends 'etudiant_base.html.twig' %}
+
+{% block title %}Dashboard - PresenceFlow{% endblock %}
+
+{% block body %}
+<main class="flex-grow p-6 flex flex-col relative pb-32"> <div class="mb-6 flex flex-col items-center text-center sm:items-start sm:text-left">
+        <h2 class="text-2xl text-black">Bonjour, <span class="font-bold">{{ app.user.prenom|default('Etudiant') }}</span></h2>
+        <div class="border-b-2 border-black inline-block mt-1">
+            <p class="text-xs text-slate-500 font-bold tracking-wider uppercase px-1 pb-1">DWWM 2026</p>
+        </div>
+    </div>
+
+    {# Gestion stricte des messages Flash #}
+        <div class="w-full max-w-sm mb-6">
+            {% for label, messages in app.flashes %}
+                {% for message in messages %}
+                    <div class="p-4 text-xs font-bold text-white uppercase tracking-widest text-center shadow-lg
+                        {{ label == 'success' ? 'bg-green-600' : (label == 'error' ? 'bg-red-600' : 'bg-blue-600') }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endfor %}
+        </div>
+
+    <div class="bg-slate-100 p-4 mb-10 text-center flex flex-col items-center justify-center">
+        <p class="text-sm text-black flex items-center gap-2">
+            <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+            Vous avez 1 absence à justifier.
+        </p>
+        <a href="#" class="text-sm font-bold text-black border-b border-black mt-1 inline-block hover:text-gray-600 transition-colors">Régulariser</a>
+    </div>
+
+    <div class="mb-10">
+        <div class="flex justify-between items-center border-b border-gray-300 pb-2 mb-5">
+            <span class="text-xs font-bold text-slate-500 tracking-wider uppercase">En cours</span>
+            <span class="text-[11px] font-bold border border-black px-2 py-0.5">
+                {% if session %}{{ session.heureDebut|date('H:i') }} - {{ session.heureFin|date('H:i') }}{% else %}09:00 - 12:30{% endif %}
+            </span>
+        </div>
+
+        <div class="text-center sm:text-left">
+            <h3 class="text-xl font-black text-black mb-3">
+                {% if session %}{{ session.matiere.nom }}{% else %}Architecture Logicielle{% endif %}
+            </h3>
+            <div class="space-y-1.5 inline-block text-left">
+                <p class="text-sm text-black flex items-center gap-2">
+                    <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"></path></svg>
+                    {% if session %}{{ session.emplacement }}{% else %}Emplacement Non Renseigne{% endif %}
+                </p>
+                <p class="text-sm text-black flex items-center gap-2">
+                    <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                    Intervenant: {% if session %}{{ session.formateur.prenom }} {{ session.formateur.nom }}{% else %}M. l'Intervenant{% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div>
+        <div class="border-b border-gray-300 pb-2 mb-4">
+            <span class="text-xs font-bold text-slate-500 tracking-wider uppercase">Suite du programme</span>
+        </div>
+
+        <div class="border border-gray-300 rounded-xl p-4 flex justify-between items-center bg-white">
+            <div>
+                <p class="text-xs text-gray-500 mb-1">13:30 - 17:00</p>
+                <p class="text-sm font-bold text-black">Atelier Pratique C#</p>
+            </div>
+            <div class="text-[11px] border border-black px-2 py-1">
+                Salle 306
+            </div>
+        </div>
+    </div>
+
+    <div class="fixed bottom-[72px] left-0 w-full px-6 bg-gradient-to-t from-white via-white to-transparent pt-6 pb-2 z-40 pointer-events-none">
+        <a href="{{ path('app_etudiant_scanner') }}" class="w-full bg-black hover:bg-gray-800 text-white font-bold py-4 text-xs tracking-widest flex items-center justify-center space-x-3 transition-colors pointer-events-auto shadow-lg">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm14 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path></svg>
+            <span>SCANNER LE QR CODE</span>
+        </a>
+    </div>
+
+</main>
+{% endblock %}

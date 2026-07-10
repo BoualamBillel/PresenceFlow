@@ -3,3 +3,8 @@
 body {
     background-color: skyblue;
 }
+
+#qr-reader video {
+    object-fit: cover !important;
+    border-radius: 2rem !important;
+}
