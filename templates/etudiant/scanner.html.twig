@@ -1,0 +1,61 @@
+{# templates/etudiant/scanner.html.twig #}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scanner Émargement - PresenceFlow</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    {% block javascripts %}
+        {{ importmap('app') }}
+    {% endblock %}
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col font-sans">
+
+    <main class="flex-grow flex flex-col items-center p-6 bg-gray-50 min-h-screen">
+        
+        <div class="w-full max-w-sm mb-6 flex justify-between items-center">
+            <a href="{{ path('app_etudiant_dashboard') }}" class="p-2 bg-white rounded-full shadow hover:bg-gray-100 transition-colors">
+                <svg class="w-6 h-6 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+            </a>
+            <h1 class="text-xl font-black text-black uppercase tracking-wider">
+                Scanner
+            </h1>
+            <div class="w-10"></div> </div>
+
+        {# Gestion stricte des messages Flash #}
+        <div class="w-full max-w-sm mb-6">
+            {% for label, messages in app.flashes %}
+                {% for message in messages %}
+                    <div class="p-4 text-xs font-bold text-white uppercase tracking-widest text-center shadow-lg rounded-xl
+                        {{ label == 'success' ? 'bg-green-600' : (label == 'error' ? 'bg-red-600' : 'bg-blue-600') }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endfor %}
+        </div>
+
+        {# Le conteneur vidéo optimisé #}
+        <div data-controller="scanner" class="w-full max-w-sm bg-black rounded-[2rem] overflow-hidden shadow-2xl relative border-4 border-white ring-1 ring-gray-200">
+            <div id="qr-reader" data-scanner-target="reader" class="w-full min-h-[400px] flex items-center justify-center bg-gray-900">
+                <span class="text-white text-xs font-bold tracking-widest uppercase animate-pulse">Initialisation...</span>
+            </div>
+            
+            <div class="absolute inset-0 pointer-events-none flex items-center justify-center">
+                <div class="w-[200px] h-[200px] border-2 border-white/30 rounded-xl relative">
+                    <div class="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-white rounded-tl-xl"></div>
+                    <div class="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-white rounded-tr-xl"></div>
+                    <div class="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-white rounded-bl-xl"></div>
+                    <div class="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-white rounded-br-xl"></div>
+                </div>
+            </div>
+        </div>
+
+        <p class="mt-8 text-[11px] text-gray-500 font-bold uppercase tracking-widest text-center max-w-xs">
+            Centrez le QR code du formateur dans le cadre
+        </p>
+
+    </main>
+
+</body>
+</html>

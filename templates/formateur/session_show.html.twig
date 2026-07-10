@@ -128,10 +128,12 @@
                         {% set isRetard = emargement.statut == 'RETARD' %}
                         {% set isAbsent = emargement.statut == 'ABSENT' %}
                         
-                        <div onclick="openStatusModal({{ emargement.id }}, '{{ etudiant.prenom|escape('js') }}', '{{ etudiant.nom|escape('js') }}', '{{ emargement.statut }}', '{{ csrf_token('modifier' ~ emargement.id) }}')" 
+                        {# 1. ID sur la carte globale #}
+                        <div id="card-{{ emargement.id }}" onclick="openStatusModal({{ emargement.id }}, '{{ etudiant.prenom|escape('js') }}', '{{ etudiant.nom|escape('js') }}', '{{ emargement.statut }}', '{{ csrf_token('modifier' ~ emargement.id) }}')" 
                              class="flex items-center bg-white border {{ isAttente ? 'border-gray-200' : 'border-black' }} p-3 cursor-pointer hover:bg-gray-50 transition-colors">
                             
-                            <div class="w-8 h-8 rounded-full text-[10px] font-black flex items-center justify-center mr-3 border
+                            {# 2. ID sur l'avatar #}
+                            <div id="avatar-{{ emargement.id }}" class="w-8 h-8 rounded-full text-[10px] font-black flex items-center justify-center mr-3 border
                                 {{ isAttente ? 'bg-gray-100 border-gray-200 text-gray-400' }}
                                 {{ isPresent ? 'bg-green-50 border-black text-black' }}
                                 {{ isRetard ? 'bg-orange-50 border-black text-black' }}
@@ -141,20 +143,22 @@
                             </div>
 
                             <div class="flex-grow">
-                                <p class="text-sm font-bold {{ isAttente ? 'text-gray-500' : 'text-black' }} leading-none">
+                                <p id="name-{{ emargement.id }}" class="text-sm font-bold {{ isAttente ? 'text-gray-500' : 'text-black' }} leading-none">
                                     {{ etudiant.prenom }} {{ etudiant.nom }}
                                 </p>
                                 
-                                {# Affichage strict et exhaustif des statuts #}
-                                {% if isPresent %}
-                                    <p class="text-[9px] font-black text-green-600 uppercase mt-1 tracking-wider">✔ Présent</p>
-                                {% elseif isRetard %}
-                                    <p class="text-[9px] font-black text-orange-500 uppercase mt-1 tracking-wider">⏱ Retard ({{ emargement.heureSignature|date('H:i') }})</p>
-                                {% elseif isAbsent %}
-                                    <p class="text-[9px] font-black text-red-500 uppercase mt-1 tracking-wider">❌ Absent</p>
-                                {% else %}
-                                    <p class="text-[9px] font-black text-gray-400 uppercase mt-1 tracking-wider">? En attente</p>
-                                {% endif %}
+                                {# 3. ID sur le conteneur du texte de statut #}
+                                <div id="status-{{ emargement.id }}">
+                                    {% if isPresent %}
+                                        <p class="text-[9px] font-black text-green-600 uppercase mt-1 tracking-wider">✔ Présent</p>
+                                    {% elseif isRetard %}
+                                        <p class="text-[9px] font-black text-orange-500 uppercase mt-1 tracking-wider">⏱ Retard ({{ emargement.heureSignature|date('H:i') }})</p>
+                                    {% elseif isAbsent %}
+                                        <p class="text-[9px] font-black text-red-500 uppercase mt-1 tracking-wider">❌ Absent</p>
+                                    {% else %}
+                                        <p class="text-[9px] font-black text-gray-400 uppercase mt-1 tracking-wider">? En attente</p>
+                                    {% endif %}
+                                </div>
                             </div>
                         </div>
                     {% else %}
@@ -256,6 +260,55 @@
             }, 1000);
             
             updateDisplay();
+
+            // === ÉCOUTEUR TEMPS RÉEL MERCURE ===
+            const topic = 'http://presenceflow.com/session/{{ session.id }}';
+            
+            // 1. On laisse Symfony générer l'URL avec le bon Token JWT d'autorisation
+            const rawUrl = '{{ mercure('http://presenceflow.com/session/' ~ session.id)|escape('js') }}';
+            const url = new URL(rawUrl);
+            
+            // 2. LE CORRECTIF NGROK : On écrase "localhost" par le domaine actuel (Ngrok)
+            url.hostname = window.location.hostname; // Remplace "localhost" par le domaine Ngrok
+            url.port = window.location.port;         // Écrase le "3000" par le port de la fenêtre (vide pour 443)
+            url.protocol = window.location.protocol;
+            
+            // 3. On lance la connexion avec la bonne URL
+            const eventSource = new EventSource(url);
+
+            eventSource.onmessage = event => {
+                // event.data contient le payload JSON envoyé par ton backend
+                const data = JSON.parse(event.data);
+                
+                const card = document.getElementById('card-' + data.emargement_id);
+                const avatar = document.getElementById('avatar-' + data.emargement_id);
+                const status = document.getElementById('status-' + data.emargement_id);
+                const name = document.getElementById('name-' + data.emargement_id);
+
+                if (card && avatar && status) {
+                    // 1. Mise à jour de la bordure de la carte et couleur du nom
+                    card.classList.remove('border-gray-200');
+                    card.classList.add('border-black');
+                    name.classList.remove('text-gray-500');
+                    name.classList.add('text-black');
+
+                    // 2. Nettoyage et mise à jour de l'avatar
+                    avatar.className = 'w-8 h-8 rounded-full text-[10px] font-black flex items-center justify-center mr-3 border border-black text-black';
+                    
+                    // 3. Injection du nouveau HTML pour le texte de statut
+                    if (data.statut === 'PRESENT') {
+                        avatar.classList.add('bg-green-50');
+                        status.innerHTML = `<p class="text-[9px] font-black text-green-600 uppercase mt-1 tracking-wider">✔ Présent</p>`;
+                    } else if (data.statut === 'RETARD') {
+                        avatar.classList.add('bg-orange-50');
+                        status.innerHTML = `<p class="text-[9px] font-black text-orange-500 uppercase mt-1 tracking-wider">⏱ Retard (${data.heure})</p>`;
+                    }
+                    
+                    // Petit effet visuel pour montrer que la mise à jour s'est faite
+                    card.classList.add('bg-green-50', 'transition-all', 'duration-500');
+                    setTimeout(() => card.classList.remove('bg-green-50'), 500);
+                }
+            };
         });
 
         function openStatusModal(emargementId, prenom, nom, currentStatus, csrfToken) {
