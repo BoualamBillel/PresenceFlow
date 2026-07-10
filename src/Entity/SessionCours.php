@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\SessionCoursRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -40,6 +42,23 @@ class SessionCours
     #[ORM\ManyToOne(inversedBy: 'sessions')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Matiere $matiere = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $qrCodeToken = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $qrTokenExpiresAt = null;
+
+    /**
+     * @var Collection<int, Emargement>
+     */
+    #[ORM\OneToMany(targetEntity: Emargement::class, mappedBy: 'session', orphanRemoval: true)]
+    private Collection $emargements;
+
+    public function __construct()
+    {
+        $this->emargements = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -175,5 +194,85 @@ class SessionCours
         } else {
             return 'TERMINE';
         }
+    }
+
+    public function getQrCodeToken(): ?string
+    {
+        return $this->qrCodeToken;
+    }
+
+    public function setQrCodeToken(?string $qrCodeToken): static
+    {
+        $this->qrCodeToken = $qrCodeToken;
+
+        return $this;
+    }
+
+    public function getQrTokenExpiresAt(): ?\DateTimeImmutable
+    {
+        return $this->qrTokenExpiresAt;
+    }
+
+    public function setQrTokenExpiresAt(?\DateTimeImmutable $qrTokenExpiresAt): static
+    {
+        $this->qrTokenExpiresAt = $qrTokenExpiresAt;
+
+        return $this;
+    }
+
+    /**
+     * Génère un nouveau jeton de sécurité pour l'émargement (valide 5 minutes)
+     */
+    public function generateNewQrToken(): void
+    {
+        // Génération d'une chaîne hexadécimale sécurisée de 32 caractères
+        $this->qrCodeToken = bin2hex(random_bytes(16));
+        
+        // Expiration définie à +5 minutes par rapport à l'heure du serveur (Paris)
+        $now = new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris'));
+        $this->qrTokenExpiresAt = $now->modify('+5 minutes');
+    }
+
+    /**
+     * Vérifie si le jeton actuel est toujours valide
+     */
+    public function isQrTokenValid(): bool
+    {
+        if (!$this->qrCodeToken || !$this->qrTokenExpiresAt) {
+            return false;
+        }
+
+        $now = new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris'));
+        return $this->qrTokenExpiresAt > $now;
+    }
+
+    /**
+     * @return Collection<int, Emargement>
+     */
+    public function getEmargements(): Collection
+    {
+        return $this->emargements;
+    }
+
+    public function addEmargement(Emargement $emargement): static
+    {
+        if (!$this->emargements->contains($emargement)) {
+            $this->emargements->add($emargement);
+            $emargement->setSession($this);
+        }
+
+        return $this;
+    }
+
+    public function removeEmargement(Emargement $emargement): static
+    {
+        if ($this->emargements->removeElement($emargement)) {
+            // set the owning side to null (unless already changed)
+            if ($emargement->getSession() === $this) {
+                $emargement->setSession(null);
+            }
+        }
+
+        return $this;
     }
 }

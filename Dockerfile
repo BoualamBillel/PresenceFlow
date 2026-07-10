@@ -6,7 +6,11 @@ RUN apk add --no-cache \
     postgresql-dev \
     git \
     unzip \
-    && docker-php-ext-install pdo pdo_pgsql
+    libpng-dev \
+    libjpeg-turbo-dev \
+    freetype-dev \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install pdo pdo_pgsql gd
 
 # Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer

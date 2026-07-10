@@ -1,0 +1,321 @@
+{% extends 'formateur_base.html.twig' %}
+
+{% block title %}
+    {% if session %}Session - {{ session.matiere.nom }}{% else %}Dashboard Formateur{% endif %}
+{% endblock %}
+
+{% block page_title %}Vue d'ensemble{% endblock %}
+
+{% block body %}
+    <main class="flex-grow p-4">
+        
+        {# ========================================================= #}
+        {# ÉTAT 0 : AUCUN COURS AUJOURD'HUI (OU TOUS TERMINÉS)       #}
+        {# ========================================================= #}
+        {% if session is null %}
+            <div class="h-full flex flex-col items-center justify-center mt-32 space-y-4 px-6 text-center">
+                <div class="w-16 h-16 bg-white text-black border border-black rounded-none flex items-center justify-center shadow-sm">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+                </div>
+                <h2 class="text-xl font-black text-black uppercase tracking-wide">Aucun cours actif</h2>
+                <p class="text-xs text-gray-500 max-w-xs leading-relaxed font-medium">
+                    Vous n'avez aucune session de cours planifiée ou restante pour cette journée.
+                </p>
+            </div>
+            
+        {% else %}
+            {# ========================================================= #}
+            {# ÉTAT 1 : COURS INACTIF (Avant le lancement)               #}
+            {# ========================================================= #}
+            {% if not qr_code_uri %}
+                <div class="h-full flex flex-col items-center justify-center mt-32 space-y-4">
+                    
+                    {# Dictionnaire de traduction des mois #}
+                    {% set frMonths = {'Jan': 'janv.', 'Feb': 'févr.', 'Mar': 'mars', 'Apr': 'avr.', 'May': 'mai', 'Jun': 'juin', 'Jul': 'juil.', 'Aug': 'août', 'Sep': 'sept.', 'Oct': 'oct.', 'Nov': 'nov.', 'Dec': 'déc.'} %}
+                    {% set monthLabel = frMonths[session.dateCours|date('M')]|default(session.dateCours|date('M')) %}
+
+                    <p class="text-sm font-bold text-black text-center">
+                        Votre prochain cours commence le {{ session.dateCours|date('d') }} {{ monthLabel }} à {{ session.heureDebut|date('H:i') }} :
+                    </p>
+                    <h2 class="text-2xl font-black text-center text-black">{{ session.matiere.nom }}</h2>
+                    <p class="text-xs text-gray-500 uppercase tracking-wider">{{ session.classe.nom }}</p>
+                    
+                    <span class="inline-flex items-center px-3 py-1 rounded-full border border-gray-300 text-[10px] font-bold uppercase tracking-wider text-gray-600 mt-2">
+                        <span class="w-2 h-2 rounded-full bg-red-500 mr-2"></span>
+                        Session Inactive
+                    </span>
+
+                    {% if is_startable %}
+                        <form method="post" action="{{ path('app_formateur_session_start', {'id': session.id}) }}" class="w-full max-w-sm mt-12">
+                            <input type="hidden" name="_token" value="{{ csrf_token('start' ~ session.id) }}">
+                            <button type="submit" class="w-full bg-black hover:bg-slate-800 text-white font-bold py-4 rounded-none text-xs uppercase tracking-widest transition-colors flex items-center justify-center space-x-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                <span>Lancer la session</span>
+                            </button>
+                        </form>
+                    {% else %}
+                        <div class="w-full max-w-sm mt-12 bg-gray-100 border border-gray-300 py-4 px-2 text-center">
+                            <p class="text-xs font-bold text-gray-500 uppercase tracking-widest flex justify-center items-center space-x-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                                <span>Ouverture verrouillée</span>
+                            </p>
+                            <p class="text-[10px] text-gray-500 mt-2 font-medium">
+                                L'émargement sera disponible 15 minutes avant le début du cours.
+                            </p>
+                        </div>
+                    {% endif %}
+                </div>
+
+            {# ========================================================= #}
+            {# ÉTAT 2 : COURS ACTIF (QR Code généré)                     #}
+            {# ========================================================= #}
+            {% else %}
+                <div class="text-center mb-6">
+                    <h2 class="text-2xl font-black text-black">{{ session.classe.nom }}</h2>
+                    <p class="text-xs text-gray-500 uppercase tracking-wider">{{ session.matiere.nom }}</p>
+                    <span class="inline-flex items-center px-3 py-1 rounded-full border border-green-300 text-[10px] font-bold uppercase tracking-wider text-green-700 mt-2 bg-green-50">
+                        <span class="w-2 h-2 rounded-full bg-green-500 mr-2"></span>
+                        Session Active
+                    </span>
+                </div>
+
+                <div class="bg-white border border-black p-4 mb-8">
+                    <img src="{{ qr_code_uri }}" alt="QR Code d'émargement" class="w-full max-w-[300px] mx-auto mb-4 border-4 border-black">
+                    
+                    <div class="text-center font-bold text-sm mb-4 flex items-center justify-center space-x-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <span>Valide pendant <span id="countdown" class="text-black font-black" data-time="{{ time_left }}">00:00</span></span>
+                    </div>
+
+                    <div class="space-y-2">
+                        <form method="post" action="{{ path('app_formateur_session_start', {'id': session.id}) }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('start' ~ session.id) }}">
+                            <button type="submit" class="w-full bg-black hover:bg-gray-800 text-white font-bold py-3 text-xs uppercase tracking-widest flex items-center justify-center space-x-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                                <span>Régénérer le code</span>
+                            </button>
+                        </form>
+                        <button class="w-full bg-black hover:bg-gray-800 text-white font-bold py-3 text-xs uppercase tracking-widest flex items-center justify-center space-x-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+                            <span>Partager</span>
+                        </button>
+                    </div>
+                </div>
+
+                {% set totalEtudiants = session.emargements|length %}
+                {% set nbPresents = session.emargements|filter(e => e.statut == 'PRESENT' or e.statut == 'RETARD')|length %}
+                {% set pourcentage = totalEtudiants > 0 ? (nbPresents / totalEtudiants) * 100 : 0 %}
+
+                <div class="mb-8">
+                    <p class="text-[10px] font-bold text-center uppercase tracking-wider mb-2">Présence</p>
+                    <div class="w-full h-3 bg-white border border-black flex">
+                        <div class="h-full bg-black transition-all duration-500" style="width: {{ pourcentage }}%;"></div>
+                    </div>
+                    <p class="text-[10px] text-center text-gray-500 font-bold mt-1">{{ nbPresents }} / {{ totalEtudiants }} PRÉSENTS</p>
+                </div>
+
+                <div class="mb-4">
+                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider border-b border-gray-200 pb-2 mb-4 flex justify-between">
+                        <span>Liste des étudiants</span>
+                        <span>Total : {{ totalEtudiants }}</span>
+                    </h3>
+                    
+                    <div class="space-y-3">
+                        {% for emargement in session.emargements %}
+                        {% set etudiant = emargement.etudiant %}
+                        {% set isAttente = emargement.statut == 'EN_ATTENTE' %}
+                        {% set isPresent = emargement.statut == 'PRESENT' %}
+                        {% set isRetard = emargement.statut == 'RETARD' %}
+                        {% set isAbsent = emargement.statut == 'ABSENT' %}
+                        
+                        <div onclick="openStatusModal({{ emargement.id }}, '{{ etudiant.prenom|escape('js') }}', '{{ etudiant.nom|escape('js') }}', '{{ emargement.statut }}', '{{ csrf_token('modifier' ~ emargement.id) }}')" 
+                             class="flex items-center bg-white border {{ isAttente ? 'border-gray-200' : 'border-black' }} p-3 cursor-pointer hover:bg-gray-50 transition-colors">
+                            
+                            <div class="w-8 h-8 rounded-full text-[10px] font-black flex items-center justify-center mr-3 border
+                                {{ isAttente ? 'bg-gray-100 border-gray-200 text-gray-400' }}
+                                {{ isPresent ? 'bg-green-50 border-black text-black' }}
+                                {{ isRetard ? 'bg-orange-50 border-black text-black' }}
+                                {{ isAbsent ? 'bg-red-50 border-black text-black' }}
+                            ">
+                                {{ etudiant.prenom|first|upper }}{{ etudiant.nom|first|upper }}
+                            </div>
+
+                            <div class="flex-grow">
+                                <p class="text-sm font-bold {{ isAttente ? 'text-gray-500' : 'text-black' }} leading-none">
+                                    {{ etudiant.prenom }} {{ etudiant.nom }}
+                                </p>
+                                
+                                {# Affichage strict et exhaustif des statuts #}
+                                {% if isPresent %}
+                                    <p class="text-[9px] font-black text-green-600 uppercase mt-1 tracking-wider">✔ Présent</p>
+                                {% elseif isRetard %}
+                                    <p class="text-[9px] font-black text-orange-500 uppercase mt-1 tracking-wider">⏱ Retard ({{ emargement.heureSignature|date('H:i') }})</p>
+                                {% elseif isAbsent %}
+                                    <p class="text-[9px] font-black text-red-500 uppercase mt-1 tracking-wider">❌ Absent</p>
+                                {% else %}
+                                    <p class="text-[9px] font-black text-gray-400 uppercase mt-1 tracking-wider">? En attente</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% else %}
+                        <p class="text-xs text-gray-500 italic text-center py-4">Aucun étudiant rattaché à cette session.</p>
+                    {% endfor %}
+                    </div>
+                </div>
+
+                <button class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-4 text-xs uppercase tracking-widest mt-4 transition-colors">
+                    Clôturer l'émargement
+                </button>
+            {% endif %}
+        {% endif %}
+    </main>
+
+    <div id="status-modal" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center transition-opacity opacity-0">
+        
+        <div id="status-modal-content" class="bg-white w-full max-w-md rounded-t-[2rem] sm:rounded-3xl p-6 sm:p-8 transform translate-y-full sm:translate-y-0 sm:scale-95 transition-transform duration-300 shadow-2xl relative">
+            
+            <div class="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-6 sm:hidden"></div>
+            
+            <button type="button" onclick="closeStatusModal()" class="absolute top-6 right-6 text-gray-400 hover:text-black transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+
+            <h3 class="text-xl font-black text-black mb-6 border-b-4 border-black inline-block pb-1">Modifier le statut</h3>
+
+            <div class="border border-gray-200 p-4 mb-6 bg-white flex items-center space-x-4">
+                <div id="modal-initials" class="w-10 h-10 rounded-full bg-gray-100 border border-gray-200 text-gray-800 text-[11px] font-black flex items-center justify-center shrink-0">
+                    LM
+                </div>
+                <div>
+                    <p id="modal-name" class="font-bold text-black text-base leading-none">Lucas Martin</p>
+                    <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mt-1.5">Actuellement : <span id="modal-current-status" class="text-black">EN ATTENTE</span></p>
+                </div>
+                <div id="modal-color-indicator" class="w-3 h-3 rounded-full border border-black ml-auto bg-orange-400"></div>
+            </div>
+
+            <form id="status-form" method="post" action="">
+                <input type="hidden" name="_token" id="modal-csrf" value="">
+                
+                <div class="space-y-3 mb-8">
+                    <label class="block cursor-pointer relative">
+                        <input type="radio" name="statut" value="PRESENT" class="peer sr-only">
+                        <div class="border border-gray-200 p-4 flex items-center justify-center peer-checked:border-green-500 transition-colors">
+                            <span class="absolute left-4 w-3 h-3 rounded-full border border-black bg-green-500"></span>
+                            <span class="text-xs font-bold text-green-500 uppercase tracking-widest">Présent</span>
+                        </div>
+                    </label>
+
+                    <label class="block cursor-pointer relative">
+                        <input type="radio" name="statut" value="RETARD" class="peer sr-only">
+                        <div class="border border-gray-200 p-4 flex items-center justify-center peer-checked:border-orange-500 transition-colors">
+                            <span class="absolute left-4 w-3 h-3 rounded-full border border-black bg-orange-400"></span>
+                            <span class="text-xs font-bold text-orange-400 uppercase tracking-widest">En Retard</span>
+                        </div>
+                    </label>
+
+                    <label class="block cursor-pointer relative">
+                        <input type="radio" name="statut" value="ABSENT" class="peer sr-only">
+                        <div class="border border-gray-200 p-4 flex items-center justify-center peer-checked:border-red-500 transition-colors">
+                            <span class="absolute left-4 w-3 h-3 rounded-full border border-black bg-red-500"></span>
+                            <span class="text-xs font-bold text-red-500 uppercase tracking-widest">Absent</span>
+                        </div>
+                    </label>
+                </div>
+
+                <button type="submit" class="w-full bg-black hover:bg-slate-800 text-white font-bold py-4 rounded-xl text-sm tracking-wider transition-colors">
+                    Confirmer la modification
+                </button>
+            </form>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {% if qr_code_uri %}
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const countdownElement = document.getElementById('countdown');
+            let timeLeft = parseInt(countdownElement.getAttribute('data-time'), 10);
+
+            function updateDisplay() {
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                countdownElement.textContent = 
+                    String(minutes).padStart(2, '0') + ':' + 
+                    String(seconds).padStart(2, '0');
+            }
+
+            const timer = setInterval(() => {
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    window.location.reload();
+                } else {
+                    timeLeft--;
+                    updateDisplay();
+                }
+            }, 1000);
+            
+            updateDisplay();
+        });
+
+        function openStatusModal(emargementId, prenom, nom, currentStatus, csrfToken) {
+            const modal = document.getElementById('status-modal');
+            const content = document.getElementById('status-modal-content');
+            
+            // Hydratation des données visuelles
+            document.getElementById('modal-name').textContent = prenom + ' ' + nom;
+            document.getElementById('modal-initials').textContent = prenom.charAt(0).toUpperCase() + nom.charAt(0).toUpperCase();
+            document.getElementById('modal-current-status').textContent = currentStatus.replace('_', ' ');
+            
+            // Pastille de couleur de l'état actuel
+            const colorIndicator = document.getElementById('modal-color-indicator');
+            colorIndicator.className = 'w-3 h-3 rounded-full border border-black ml-auto ' + 
+                (currentStatus === 'PRESENT' ? 'bg-green-500' : 
+                 currentStatus === 'RETARD' ? 'bg-orange-400' : 
+                 currentStatus === 'ABSENT' ? 'bg-red-500' : 'bg-gray-200');
+
+            // Hydratation du formulaire technique
+            document.getElementById('status-form').action = '/formateur/emargement/' + emargementId + '/modifier';
+            document.getElementById('modal-csrf').value = csrfToken;
+
+            // Pré-cocher le bon bouton radio si la valeur correspond
+            const radios = document.getElementsByName('statut');
+            radios.forEach(r => { 
+                r.checked = (r.value === currentStatus); 
+            });
+
+            // Animations d'ouverture (Bottom sheet sur mobile, fade scale sur desktop)
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                if (window.innerWidth < 640) {
+                    content.classList.remove('translate-y-full');
+                } else {
+                    content.classList.remove('scale-95');
+                }
+            }, 10);
+        }
+
+        function closeStatusModal() {
+            const modal = document.getElementById('status-modal');
+            const content = document.getElementById('status-modal-content');
+            
+            modal.classList.add('opacity-0');
+            if (window.innerWidth < 640) {
+                content.classList.add('translate-y-full');
+            } else {
+                content.classList.add('scale-95');
+            }
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        // Fermer au clic sur l'overlay noir extérieur
+        document.getElementById('status-modal').addEventListener('click', function(e) {
+            if (e.target === this) closeStatusModal();
+        });
+    </script>
+    {% endif %}
+{% endblock %}
