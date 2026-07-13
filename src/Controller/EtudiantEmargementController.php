@@ -14,7 +14,7 @@ use Symfony\Component\Mercure\Update;
 #[Route('/etudiant')]
 class EtudiantEmargementController extends AbstractController
 {
-   #[Route('/', name: 'app_etudiant_dashboard', methods: ['GET'])]
+    #[Route('/', name: 'app_etudiant_dashboard', methods: ['GET'])]
     public function dashboard(EntityManagerInterface $em): Response
     {
         /** @var \App\Entity\User $user */
@@ -34,6 +34,7 @@ class EtudiantEmargementController extends AbstractController
         $classes = $user->getClasses();
         $currentSession = null;
 
+        // 1. RECHERCHE DE LA SESSION ACTIVE (Pour le bloc principal)
         if (!$classes->isEmpty()) {
             $sessions = $em->getRepository(SessionCours::class)->createQueryBuilder('s')
                 ->where('s.classe IN (:classes)')
@@ -52,8 +53,21 @@ class EtudiantEmargementController extends AbstractController
             }
         }
 
+        // 2. RECHERCHE DE L'HISTORIQUE DES ÉMARGEMENTS (Pour la liste des absences/présences)
+        $emargements = $em->getRepository(Emargement::class)
+            ->createQueryBuilder('e')
+            ->join('e.session', 's')
+            ->where('e.etudiant = :user') // Attention : on utilise bien 'etudiant' ici
+            ->setParameter('user', $user)
+            ->orderBy('s.dateCours', 'DESC')
+            ->addOrderBy('s.heureDebut', 'DESC')
+            ->getQuery()
+            ->getResult();
+
+        // 3. ENVOI DES DONNÉES À LA VUE
         return $this->render('etudiant/dashboard.html.twig', [
             'session' => $currentSession,
+            'emargements' => $emargements,
         ]);
     }
 

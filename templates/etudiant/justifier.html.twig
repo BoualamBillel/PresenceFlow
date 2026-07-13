@@ -1,0 +1,77 @@
+{% extends 'etudiant_base.html.twig' %}
+
+{% block title %}Justifier une absence{% endblock %}
+
+{% block page_title %}Justificatif{% endblock %}
+
+{% block body %}
+    <main class="flex-grow p-4">
+        
+        {# Bouton de retour #}
+        <div class="mb-6">
+            <a href="{{ path('app_etudiant_dashboard') }}" class="text-[10px] font-bold text-gray-500 uppercase tracking-wider flex items-center hover:text-black transition-colors">
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                Retour au tableau de bord
+            </a>
+        </div>
+
+        <div class="bg-white border border-black p-6 mb-8">
+            <h2 class="text-xl font-black text-black mb-2 uppercase tracking-wide">Soumettre un document</h2>
+            <p class="text-xs text-gray-500 font-bold mb-6">
+                Session du {{ emargement.session.dateCours|date('d/m/Y') }} - {{ emargement.session.matiere.nom }}
+            </p>
+
+            {# Rappel du statut actuel #}
+            <div class="flex items-center p-3 mb-8 border {{ emargement.statut == 'ABSENT' ? 'border-red-500 bg-red-50' : 'border-orange-400 bg-orange-50' }}">
+                <span class="text-[10px] font-black uppercase tracking-widest {{ emargement.statut == 'ABSENT' ? 'text-red-600' : 'text-orange-600' }}">
+                    État de la session : {{ emargement.statut }}
+                </span>
+            </div>
+
+            {# Le formulaire Symfony #}
+            {{ form_start(form, {'attr': {'id': 'justificatif-form', 'class': 'space-y-6'}}) }}
+                
+                <div>
+                    {{ form_label(form.fichier, 'Document (PDF ou Image, max 5Mo)', {'label_attr': {'class': 'block text-[10px] font-black uppercase tracking-widest text-black mb-3'}}) }}
+                    
+                    {# Fausse zone d'upload stylisée #}
+                    <div class="relative border border-dashed border-gray-400 p-8 flex flex-col items-center justify-center hover:border-black transition-colors bg-gray-50 cursor-pointer" onclick="document.getElementById('{{ form.fichier.vars.id }}').click()">
+                        <svg class="w-8 h-8 text-black mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                        <p class="text-xs font-bold text-black text-center uppercase tracking-wider">Toucher pour explorer</p>
+                        <p id="file-name" class="text-[10px] text-green-600 font-black mt-3 hidden bg-green-50 px-2 py-1 border border-green-200"></p>
+                    </div>
+                    
+                    {# Le véritable input file caché #}
+                    <div class="hidden">
+                        {{ form_widget(form.fichier, {'attr': {'onchange': 'updateFileName(this)'}}) }}
+                    </div>
+                    
+                    {# Affichage des erreurs de validation (ex: fichier trop lourd) #}
+                    <div class="text-red-600 text-[10px] font-black uppercase tracking-wider mt-2">
+                        {{ form_errors(form.fichier) }}
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full bg-black hover:bg-slate-800 text-white font-bold py-4 text-xs uppercase tracking-widest transition-colors flex items-center justify-center space-x-2 mt-4">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <span>Transmettre à l'administration</span>
+                </button>
+                
+            {{ form_end(form) }}
+        </div>
+    </main>
+{% endblock %}
+
+{% block javascripts %}
+    <script>
+        function updateFileName(input) {
+            const fileNameDisplay = document.getElementById('file-name');
+            if (input.files && input.files.length > 0) {
+                fileNameDisplay.textContent = '✔ ' + input.files[0].name;
+                fileNameDisplay.classList.remove('hidden');
+            } else {
+                fileNameDisplay.classList.add('hidden');
+            }
+        }
+    </script>
+{% endblock %}
