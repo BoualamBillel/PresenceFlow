@@ -34,6 +34,27 @@ class Emargement
 
     public function getStatut(): ?string
     {
+        if ($this->statut !== 'EN_ATTENTE') {
+            return $this->statut;
+        }
+
+        $session = $this->getSession();
+        
+        if ($session && $session->getDateCours() && $session->getHeureFin()) {
+            $now = new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris'));
+            
+            // Reconstitution de la limite fatidique : Date du cours + Heure de fin
+            $dateStr = $session->getDateCours()->format('Y-m-d');
+            $heureFinStr = $session->getHeureFin()->format('H:i:s');
+            
+            $finDuCours = new \DateTimeImmutable($dateStr . ' ' . $heureFinStr, new \DateTimeZone('Europe/Paris'));
+
+            // Si l'heure actuelle a strictement dépassé la fin du cours, le retardataire devient un absent
+            if ($now > $finDuCours) {
+                return 'ABSENT';
+            }
+        }
+
         return $this->statut;
     }
 

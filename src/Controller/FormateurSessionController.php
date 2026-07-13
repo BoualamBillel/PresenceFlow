@@ -203,4 +203,32 @@ class FormateurSessionController extends AbstractController
 
         return $this->redirectToRoute('app_formateur_dashboard');
     }
+
+    #[Route('/session/{id}/cloturer', name: 'app_formateur_session_close', methods: ['POST'])]
+    public function cloturer(Request $request, SessionCours $session, EntityManagerInterface $em): Response
+    {
+        $user = $this->getUser();
+        
+        if (!$user || $session->getFormateur() !== $user) {
+            throw $this->createAccessDeniedException("Action interdite.");
+        }
+
+        // Validation du jeton CSRF pour sécuriser la requête POST
+        if ($this->isCsrfTokenValid('close'.$session->getId(), $request->request->get('_token'))) {
+            
+            $session->setQrCodeToken(null);
+            $session->setQrTokenExpiresAt(null);
+
+            foreach ($session->getEmargements() as $emargement) {
+                if ($emargement->getStatut() === 'EN_ATTENTE') {
+                    $emargement->setStatut('ABSENT');
+                }
+            }
+
+            $em->flush();
+            $this->addFlash('success', 'La session a été clôturée. Les fiches d\'absences sont figées.');
+        }
+
+        return $this->redirectToRoute('app_formateur_dashboard');
+    }
 }
