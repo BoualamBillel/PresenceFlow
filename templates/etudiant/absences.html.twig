@@ -1,0 +1,130 @@
+{% extends 'etudiant_base.html.twig' %}
+
+{% block title %}Mes Absences{% endblock %}
+
+{% block page_title %}Absences{% endblock %}
+
+{% block body %}
+<main class="flex-grow p-4 pb-24 bg-[#F8F9FA]">
+
+    {# --- AFFICHAGE DES MESSAGES FLASH --- #}
+    <div class="w-full max-w-sm mx-auto mb-6">
+        {% for label, messages in app.flashes %}
+        {% for message in messages %}
+        <div class="p-4 text-xs font-bold text-white uppercase tracking-widest text-center shadow-lg
+                {{ label == 'success' ? 'bg-green-600' : (label == 'error' ? 'bg-red-600' : 'bg-blue-600') }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% endfor %}
+    </div>
+
+    <div class="mb-6 border-b-2 border-black pb-2">
+        <h2 class="text-xl font-black text-black">Mes Absences</h2>
+        <p class="text-sm text-gray-800">Régulariser vos absences</p>
+    </div>
+
+    {# 1. Moteur de statistiques #}
+    {% set total = absences|length %}
+    {% set justifiees = 0 %}
+    {% set aJustifier = 0 %}
+
+    {% for a in absences %}
+    {% set lastJustif = a.justificatifs|last %}
+    {% if lastJustif and lastJustif.statut == 'ACCEPTE' %}
+    {% set justifiees = justifiees + 1 %}
+    {% elseif not lastJustif or lastJustif.statut == 'REFUSE' %}
+    {% set aJustifier = aJustifier + 1 %}
+    {% endif %}
+    {% endfor %}
+
+    {# 2. Grille des compteurs #}
+    <div class="grid grid-cols-3 gap-2 mb-6">
+        <div class="border border-gray-300 bg-white p-3 text-center">
+            <p class="text-[10px] font-bold text-black uppercase tracking-wider mb-1">Total</p>
+            <p class="text-xl font-black text-black">{{ total }}</p>
+        </div>
+        <div class="border border-gray-300 bg-white p-3 text-center">
+            <p class="text-[10px] font-bold text-black uppercase tracking-wider mb-1">Justifiées</p>
+            <p class="text-xl font-black text-black">{{ justifiees }}</p>
+        </div>
+        <div class="border border-red-400 bg-[#F4A5A5] p-3 text-center">
+            <p class="text-[10px] font-bold text-black uppercase tracking-wider mb-1">À justifier</p>
+            <p class="text-xl font-black text-black">{{ aJustifier }}</p>
+        </div>
+    </div>
+
+    {# 3. Liste des cartes d'absences #}
+    <div class="space-y-3">
+        {% for absence in absences %}
+        {% set session = absence.session %}
+
+        {# Dictionnaire de traduction des jours et mois #}
+        {% set frDays = {'Mon': 'Lun.', 'Tue': 'Mar.', 'Wed': 'Mer.', 'Thu': 'Jeu.', 'Fri': 'Ven.', 'Sat': 'Sam.',
+        'Sun': 'Dim.'} %}
+        {% set frMonths = {'Jan': 'Janv.', 'Feb': 'Févr.', 'Mar': 'Mars', 'Apr': 'Avr.', 'May': 'Mai', 'Jun': 'Juin',
+        'Jul': 'Juil.', 'Aug': 'Août', 'Sep': 'Sept.', 'Oct': 'Oct.', 'Nov': 'Nov.', 'Dec': 'Déc.'} %}
+
+        {% set jour = frDays[session.dateCours|date('D')] %}
+        {% set dateComplete = session.dateCours|date('d') ~ ' ' ~ frMonths[session.dateCours|date('M')] %}
+
+        {% set dernierJustif = absence.justificatifs|last %}
+
+        <div class="border border-gray-300 bg-white p-4 relative">
+
+            {# Badge en haut à droite #}
+            <div class="absolute top-4 right-4">
+                {% if not dernierJustif or dernierJustif.statut == 'REFUSE' %}
+                <span class="bg-[#9B2226] text-white text-[9px] font-bold uppercase tracking-widest px-2 py-1">
+                    {% if dernierJustif and dernierJustif.statut == 'REFUSE' %}Refusé{% else %}À Justifier{% endif %}
+                </span>
+                {% elseif dernierJustif.statut == 'EN_ATTENTE' %}
+                <span class="bg-gray-300 text-gray-600 text-[9px] font-bold uppercase tracking-widest px-2 py-1">
+                    En cours d'examen
+                </span>
+                {% elseif dernierJustif.statut == 'ACCEPTE' %}
+                <span class="bg-gray-300 text-gray-600 text-[9px] font-bold uppercase tracking-widest px-2 py-1">
+                    Justifiée
+                </span>
+                {% endif %}
+            </div>
+
+            {# Informations du cours #}
+            <div class="pr-24">
+                <h3 class="text-sm font-bold text-black leading-tight mb-1">
+                    {{ jour }} {{ dateComplete }} -<br>
+                    {{ session.matiere.nom }}
+                </h3>
+            </div>
+
+            {# Affichage du motif de refus si existant #}
+            {% if dernierJustif and dernierJustif.statut == 'REFUSE' %}
+            <div class="bg-gray-200 p-2 mt-3 mb-3">
+                <p class="text-[10px] text-black">Motif: Document illisible, merci de renvoyer une photo nette.</p>
+            </div>
+            {% endif %}
+
+            {# Boutons d'action #}
+            {% if not dernierJustif or dernierJustif.statut == 'REFUSE' %}
+            <a href="{{ path('app_etudiant_justifier', {'id': absence.id}) }}"
+                class="block w-full bg-black hover:bg-gray-800 text-white text-center font-bold py-3 text-[10px] uppercase tracking-widest mt-4 flex justify-center items-center">
+                {% if dernierJustif and dernierJustif.statut == 'REFUSE' %}
+                Renvoyer un document
+                {% else %}
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z">
+                    </path>
+                </svg>
+                Ajouter un justificatif
+                {% endif %}
+            </a>
+            {% endif %}
+
+        </div>
+        {% else %}
+        <p class="text-xs text-gray-500 italic text-center py-8">Aucune absence enregistrée.</p>
+        {% endfor %}
+    </div>
+</main>
+{% endblock %}

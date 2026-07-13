@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\EmargementRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: EmargementRepository::class)]
@@ -26,6 +28,17 @@ class Emargement
     #[ORM\ManyToOne(inversedBy: 'emargements')]
     #[ORM\JoinColumn(nullable: false)]
     private ?SessionCours $session = null;
+
+    /**
+     * @var Collection<int, Justificatif>
+     */
+    #[ORM\OneToMany(targetEntity: Justificatif::class, mappedBy: 'emargement')]
+    private Collection $justificatifs;
+
+    public function __construct()
+    {
+        $this->justificatifs = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -127,5 +140,35 @@ class Emargement
         } else {
             $this->statut = 'RETARD';
         }
+    }
+
+    /**
+     * @return Collection<int, Justificatif>
+     */
+    public function getJustificatifs(): Collection
+    {
+        return $this->justificatifs;
+    }
+
+    public function addJustificatif(Justificatif $justificatif): static
+    {
+        if (!$this->justificatifs->contains($justificatif)) {
+            $this->justificatifs->add($justificatif);
+            $justificatif->setEmargement($this);
+        }
+
+        return $this;
+    }
+
+    public function removeJustificatif(Justificatif $justificatif): static
+    {
+        if ($this->justificatifs->removeElement($justificatif)) {
+            // set the owning side to null (unless already changed)
+            if ($justificatif->getEmargement() === $this) {
+                $justificatif->setEmargement(null);
+            }
+        }
+
+        return $this;
     }
 }
