@@ -22,7 +22,6 @@ class EtudiantEmargementController extends AbstractController
         
         $this->denyAccessUnlessGranted('ROLE_ETUDIANT');
 
-        // Sécurité supplémentaire pour calmer l'IDE et valider le type à l'exécution
         if (!$user instanceof \App\Entity\User) {
             throw $this->createAccessDeniedException("Session utilisateur invalide.");
         }
@@ -34,7 +33,6 @@ class EtudiantEmargementController extends AbstractController
         $classes = $user->getClasses();
         $currentSession = null;
 
-        // 1. RECHERCHE DE LA SESSION ACTIVE (Pour le bloc principal)
         if (!$classes->isEmpty()) {
             $sessions = $em->getRepository(SessionCours::class)->createQueryBuilder('s')
                 ->where('s.classe IN (:classes)')
@@ -53,18 +51,16 @@ class EtudiantEmargementController extends AbstractController
             }
         }
 
-        // 2. RECHERCHE DE L'HISTORIQUE DES ÉMARGEMENTS (Pour la liste des absences/présences)
         $emargements = $em->getRepository(Emargement::class)
             ->createQueryBuilder('e')
             ->join('e.session', 's')
-            ->where('e.etudiant = :user') // Attention : on utilise bien 'etudiant' ici
+            ->where('e.etudiant = :user')
             ->setParameter('user', $user)
             ->orderBy('s.dateCours', 'DESC')
             ->addOrderBy('s.heureDebut', 'DESC')
             ->getQuery()
             ->getResult();
 
-        // 3. ENVOI DES DONNÉES À LA VUE
         return $this->render('etudiant/dashboard.html.twig', [
             'session' => $currentSession,
             'emargements' => $emargements,
@@ -85,15 +81,13 @@ class EtudiantEmargementController extends AbstractController
         $user = $this->getUser();
         $this->denyAccessUnlessGranted('ROLE_ETUDIANT');
 
-        // 1. Recherche de la session via le Token unique
         $session = $em->getRepository(SessionCours::class)->findOneBy(['qrCodeToken' => $token]);
 
         if (!$session || !$session->isQrTokenValid()) {
             $this->addFlash('error', 'Le QR Code est invalide ou a expiré. Demandez au formateur de le régénérer.');
-            return $this->redirectToRoute('app_etudiant_dashboard'); // Retour au dashboard
+            return $this->redirectToRoute('app_etudiant_dashboard'); 
         }
 
-        // 2. Recherche de la ligne d'émargement de cet élève précis
         $emargement = $em->getRepository(Emargement::class)->findOneBy([
             'session' => $session,
             'etudiant' => $user
@@ -109,22 +103,9 @@ class EtudiantEmargementController extends AbstractController
             return $this->redirectToRoute('app_etudiant_dashboard');
         }
 
-        // 3. Logique Métier : L'entité capture l'heure et décide (Présent ou Retard)
         $emargement->marquerPresence();
         $em->flush();
 
-        // 4. MERCURE : On pousse l'info en temps réel au Dashboard du formateur CANCEL POUR L'INSTANT
-        // $topic = 'http://presenceflow.com/session/' . $session->getId();
-        // $payload = json_encode([
-        //     'emargement_id' => $emargement->getId(),
-        //     'statut' => $emargement->getStatut(),
-        //     'heure' => $emargement->getHeureSignature()->format('H:i')
-        // ]);
-        
-        // $update = new Update($topic, $payload);
-        // $hub->publish($update);
-
-        // 5. Retour UI pour l'élève (sur le dashboard)
         $this->addFlash('success', 'Présence validée : ' . $emargement->getStatut());
         
         return $this->redirectToRoute('app_etudiant_dashboard');
