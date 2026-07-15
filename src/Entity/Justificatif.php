@@ -27,6 +27,12 @@ class Justificatif
     #[ORM\JoinColumn(nullable: false)]
     private ?Emargement $emargement = null;
 
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $motifRefus = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $motifAbsence = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -76,6 +82,30 @@ class Justificatif
     public function setEmargement(?Emargement $emargement): static
     {
         $this->emargement = $emargement;
+
+        return $this;
+    }
+
+    public function getMotifRefus(): ?string
+    {
+        return $this->motifRefus;
+    }
+
+    public function setMotifRefus(?string $motifRefus): static
+    {
+        $this->motifRefus = $motifRefus;
+
+        return $this;
+    }
+
+    public function getMotifAbsence(): ?string
+    {
+        return $this->motifAbsence;
+    }
+
+    public function setMotifAbsence(string $motif): static
+    {
+        $this->motifAbsence = $motif;
 
         return $this;
     }
