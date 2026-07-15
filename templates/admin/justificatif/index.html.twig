@@ -1,0 +1,187 @@
+{% extends 'admin_base.html.twig' %}
+
+{% block title %}Justifications - Administration{% endblock %}
+
+{% block admin_content %}
+<div class="max-w-md mx-auto bg-white min-h-screen">
+
+    <div class="p-4">
+        <p class="text-sm text-gray-800 mb-4">Examinez et validez les motifs d'absence.</p>
+
+        {# Système d'onglets dynamique #}
+        <div class="flex justify-center mb-6">
+            <div class="flex border border-black rounded bg-gray-200 overflow-hidden text-sm w-64 shadow-sm">
+
+                {# Onglet EN ATTENTE #}
+                <a href="{{ path('admin_justificatif_index', {filter: 'en_attente'}) }}"
+                    class="w-1/2 text-center py-1 font-medium text-xs transition-colors {{ current_filter == 'en_attente' ? 'bg-[#1a1a1a] text-white' : 'text-gray-700 hover:bg-gray-300' }}">
+                    En attente
+                </a>
+
+                {# Onglet TRAITÉS #}
+                <a href="{{ path('admin_justificatif_index', {filter: 'traites'}) }}"
+                    class="w-1/2 text-center py-1 font-medium text-xs transition-colors {{ current_filter == 'traites' ? 'bg-[#1a1a1a] text-white' : 'text-gray-700 hover:bg-gray-300' }}">
+                    Traités
+                </a>
+
+            </div>
+        </div>
+
+        {# Liste des justificatifs #}
+        <div class="space-y-4 pb-20">
+            {% for justificatif in justificatifs %}
+
+            {# Carte individuelle #}
+            <div class="border border-gray-300 rounded-sm p-4 bg-white shadow-sm">
+
+                {# Étudiant #}
+                <div class="text-center mb-3">
+                    <h2 class="text-base font-medium text-gray-900">{{ justificatif.emargement.etudiant.prenom }} {{
+                        justificatif.emargement.etudiant.nom }}</h2>
+                    <p class="text-sm text-gray-700">
+                        {% if justificatif.emargement.etudiant.classes is not empty %}
+                        {{ justificatif.emargement.etudiant.classes|first.nom }} - Promo {{
+                        justificatif.emargement.etudiant.classes|first.annee }}
+                        {% else %}
+                        Classe / Promo inconnue
+                        {% endif %}
+                    </p>
+                </div>
+
+                {# Badge Absence #}
+                <div class="border border-gray-200 rounded-sm py-2 mb-3 flex items-center justify-center space-x-2">
+                    <span class="text-xs">🔴</span>
+                    <span class="font-bold text-sm text-gray-900">Absence le {{
+                        justificatif.emargement.session.dateCours|date('d M.') }}</span>
+                </div>
+
+                {# Pièce jointe #}
+                <div class="flex justify-center mb-3">
+                    {% if justificatif.urlFichier %}
+                    <a href="{{ asset('uploads/justificatifs/' ~ justificatif.urlFichier) }}" target="_blank"
+                        class="border border-gray-300 rounded-sm px-4 py-1.5 flex items-center space-x-2 text-sm text-gray-800 hover:bg-gray-50">
+                        <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                            </path>
+                        </svg>
+                        <span>Voir la pièce jointe</span>
+                    </a>
+                    {% else %}
+                    <div class="flex items-center space-x-2 text-sm text-gray-600">
+                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z">
+                            </path>
+                        </svg>
+                        <span>Aucun document fourni</span>
+                    </div>
+                    {% endif %}
+                </div>
+
+                {# Motif de l'étudiant #}
+                <div class="text-center mb-4 px-2">
+                    <p class="text-sm text-gray-800">"{{ justificatif.motifAbsence }}"</p>
+                </div>
+
+                {# Zone d'action ou de statut #}
+                {% if justificatif.statut == 'EN_ATTENTE' %}
+                <div class="flex justify-between gap-3">
+                    <button type="button" onclick="openModal('modal-refus-{{ justificatif.id }}')"
+                        class="w-1/2 py-1.5 border border-gray-300 rounded-sm text-sm font-bold text-gray-900 hover:bg-gray-50 text-center">
+                        Refuser
+                    </button>
+                    <form action="{{ path('admin_justificatif_valider', {id: justificatif.id}) }}" method="POST"
+                        class="w-1/2 m-0">
+                        <input type="hidden" name="_token" value="{{ csrf_token('valider' ~ justificatif.id) }}">
+                        <button type="submit"
+                            class="w-full py-1.5 border border-gray-300 rounded-sm text-sm font-bold text-gray-900 hover:bg-gray-50 text-center">
+                            Valider
+                        </button>
+                    </form>
+                </div>
+                {% else %}
+                {# Affichage du badge de statut pour les éléments traités #}
+                <div
+                    class="text-center py-2 border rounded-sm {{ justificatif.statut == 'VALIDE' ? 'border-green-300 bg-green-50' : 'border-red-300 bg-red-50' }}">
+                    <span
+                        class="text-sm font-bold tracking-wide {{ justificatif.statut == 'VALIDE' ? 'text-green-700' : 'text-red-700' }}">
+                        {{ justificatif.statut }}
+                    </span>
+                </div>
+
+                {# Affichage du motif de refus rédigé par l'admin #}
+                {% if justificatif.statut == 'REFUSE' and justificatif.motifRefus %}
+                <div class="mt-3 text-center px-2 py-2 bg-gray-100 rounded-sm border border-gray-200">
+                    <p class="text-xs font-bold text-gray-700 uppercase mb-1">Motif du refus :</p>
+                    <p class="text-sm text-gray-800 italic">"{{ justificatif.motifRefus }}"</p>
+                </div>
+                {% endif %}
+                {% endif %}
+            </div>
+
+            {# --- LA MODALE DE REFUS --- #}
+            <div id="modal-refus-{{ justificatif.id }}"
+                class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-opacity duration-300">
+
+                {# Le conteneur principal : arrondi, ombre portée profonde, fond légèrement grisé #}
+                <div
+                    class="bg-[#f0f0f0] p-6 rounded-2xl w-full max-w-sm shadow-2xl border border-gray-200 transform transition-all scale-100">
+
+                    {# En-tête de la modale #}
+                    <h3 class="font-black text-center text-gray-900 mb-1 text-lg tracking-tight">Refuser le justificatif
+                    </h3>
+                    <p class="text-sm text-center text-gray-500 mb-6 font-medium">Veuillez expliquer à l'étudiant la
+                        raison de ce refus.</p>
+
+                    {# Le Formulaire #}
+                    <form action="{{ path('admin_justificatif_refuser', {id: justificatif.id}) }}" method="POST">
+                        <input type="hidden" name="_token" value="{{ csrf_token('refuser' ~ justificatif.id) }}">
+
+                        <div class="mb-6">
+                            <label class="block font-bold mb-2 text-xs text-gray-700 uppercase tracking-widest">Raison
+                                du refus</label>
+
+                            {# Le Textarea : Focus stylisé, ombre interne #}
+                            <textarea name="motif_refus" required rows="3"
+                                class="w-full p-3 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-black focus:outline-none text-sm text-gray-800 shadow-inner transition-shadow resize-none"
+                                placeholder="Ex : Le document fourni est illisible..."></textarea>
+                        </div>
+
+                        {# Les boutons d'action #}
+                        <div class="flex gap-3">
+                            {# Bouton Annuler : Discret mais réactif #}
+                            <button type="button" onclick="closeModal('modal-refus-{{ justificatif.id }}')"
+                                class="w-1/2 py-2.5 font-bold text-gray-600 bg-gray-200 rounded-xl text-sm text-center hover:bg-gray-300 hover:text-gray-900 transition-colors">
+                                Annuler
+                            </button>
+
+                            {# Bouton Confirmer : Mise en avant, effet de soulèvement au survol #}
+                            <button type="submit"
+                                class="w-1/2 bg-black text-white font-bold py-2.5 rounded-xl text-sm text-center shadow-md hover:bg-gray-800 hover:shadow-lg transition-all transform hover:-translate-y-0.5">
+                                Confirmer
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            {% else %}
+            <div class="p-8 text-center border border-gray-300 rounded bg-gray-50">
+                <p class="text-sm text-gray-500">Aucun justificatif en attente.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+{# Script modale #}
+<script>
+    function openModal(modalId) {
+        document.getElementById(modalId).classList.remove('hidden');
+    }
+    function closeModal(modalId) {
+        document.getElementById(modalId).classList.add('hidden');
+    }
+</script>
+{% endblock %}

@@ -31,7 +31,7 @@
 
     {% for a in absences %}
     {% set lastJustif = a.justificatifs|last %}
-    {% if lastJustif and lastJustif.statut == 'ACCEPTE' %}
+    {% if lastJustif and lastJustif.statut == 'VALIDE' %}
     {% set justifiees = justifiees + 1 %}
     {% elseif not lastJustif or lastJustif.statut == 'REFUSE' %}
     {% set aJustifier = aJustifier + 1 %}
@@ -82,7 +82,7 @@
                 <span class="bg-gray-300 text-gray-600 text-[9px] font-bold uppercase tracking-widest px-2 py-1">
                     En cours d'examen
                 </span>
-                {% elseif dernierJustif.statut == 'ACCEPTE' %}
+                {% elseif dernierJustif.statut == 'VALIDE' %}
                 <span class="bg-gray-300 text-gray-600 text-[9px] font-bold uppercase tracking-widest px-2 py-1">
                     Justifiée
                 </span>
@@ -98,9 +98,12 @@
             </div>
 
             {# Affichage du motif de refus si existant #}
-            {% if dernierJustif and dernierJustif.statut == 'REFUSE' %}
-            <div class="bg-gray-200 p-2 mt-3 mb-3">
-                <p class="text-[10px] text-black">Motif: Document illisible, merci de renvoyer une photo nette.</p>
+            {% if dernierJustif and dernierJustif.statut == 'REFUSE' and dernierJustif.motifRefus %}
+            <div class="bg-gray-200 p-3 mt-3 mb-3 border-l-2 border-black">
+                <p class="text-[13px] text-black">
+                    <span class="font-bold uppercase tracking-wider">Motif du refus :</span><br>
+                    <span class="italic">"{{ dernierJustif.motifRefus }}"</span>
+                </p>
             </div>
             {% endif %}
 
