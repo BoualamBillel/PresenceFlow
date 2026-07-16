@@ -4,29 +4,29 @@
 {% block header_title %}Filières{% endblock %}
 
 {% block admin_content %}
-    <div>
+    <div class="mb-6">
         <h2 class="text-2xl font-black text-slate-900 tracking-tight">Filières</h2>
         <p class="text-sm font-medium text-slate-500 border-b-2 border-slate-900 inline-block pb-1 mt-1">Gestion des programmes de formation</p>
     </div>
     
-    <a href="{{ path('app_filiere_new') }}" class="block w-full text-center bg-black hover:bg-slate-800 text-white font-bold py-4 rounded text-sm tracking-widest transition-colors uppercase shadow-md">
+    <a href="{{ path('app_filiere_new') }}" class="block w-full text-center bg-black hover:bg-slate-800 text-white font-bold py-4 rounded text-sm tracking-widest transition-colors uppercase shadow-md mb-6">
         + Nouvelle Filière
     </a>
 
-<form method="get" action="{{ path('app_filiere_index') }}" class="relative">
-    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-        <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-        </svg>
-    </div>
-    <input type="text" 
-           name="q"
-           value="{{ app.request.query.get('q') }}"
-           class="w-full pl-10 pr-4 py-3 border border-slate-300 text-sm font-medium text-slate-900 placeholder-slate-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black rounded" 
-           placeholder="RECHERCHER UNE FILIÈRE...">
-</form>
+    <form method="get" action="{{ path('app_filiere_index') }}" class="relative mb-8">
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+        </div>
+        <input type="text" 
+               name="q"
+               value="{{ app.request.query.get('q') }}"
+               class="w-full pl-10 pr-4 py-3 border border-slate-300 text-sm font-medium text-slate-900 placeholder-slate-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black rounded" 
+               placeholder="RECHERCHER UNE FILIÈRE...">
+    </form>
 
-    <div class="space-y-4">
+    <div class="space-y-5">
         {% for filiere in filieres %}
             <div class="bg-white border-2 border-slate-300 p-5 relative group">
                 
@@ -70,7 +70,7 @@
         {% endfor %}
     </div>
 
-        {# Delete Modale #}
+    {# Delete Modale  #}
     <div id="delete-modal" class="fixed inset-0 w-screen h-screen z-[60] hidden flex items-center justify-center p-4">
         
         <div class="fixed inset-0 w-screen h-screen bg-black/60 backdrop-blur-sm transition-opacity" onclick="closeDeleteModal()"></div>
@@ -111,17 +111,14 @@
             const form = document.getElementById('delete-form');
             const tokenInput = document.getElementById('delete-token');
             
-            // Injection des données de la filière sélectionnée
             nameSpan.textContent = nomFiliere;
             form.action = actionUrl;
             tokenInput.value = csrfToken;
             
-            // Affichage de la modale
             modal.classList.remove('hidden');
         }
 
         function closeDeleteModal() {
-            // Masquage de la modale
             document.getElementById('delete-modal').classList.add('hidden');
         }
     </script>
