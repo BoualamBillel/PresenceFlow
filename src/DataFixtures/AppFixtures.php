@@ -5,6 +5,7 @@ namespace App\DataFixtures;
 use App\Entity\Classe;
 use App\Entity\Emargement;
 use App\Entity\Filiere;
+use App\Entity\Justificatif;
 use App\Entity\Matiere;
 use App\Entity\SessionCours;
 use App\Entity\User;
@@ -68,7 +69,7 @@ class AppFixtures extends Fixture
         $manager->persist($filiereCDA);
 
         // ---------------------------------------------------------
-        // 3. CLASSES (Raccordées aux filières)
+        // 3. CLASSES
         // ---------------------------------------------------------
         $classeDWWM = new Classe();
         $classeDWWM->setNom('DWWM - Promo 2026');
@@ -104,51 +105,63 @@ class AppFixtures extends Fixture
         }
 
         // ---------------------------------------------------------
-        // 5. ÉTUDIANTS (Hydratation des tables de jointure)
+        // 5. ÉTUDIANTS (Génération réaliste orientée Football)
         // ---------------------------------------------------------
+        $prenomsFoot = ['Kylian', 'Antoine', 'Olivier', 'Zinedine', 'N\'Golo', 'Thierry', 'Karim', 'Hugo', 'Eduardo', 'Aurélien', 'Lionel', 'Jude', 'Kevin', 'Erling', 'Luka'];
+        $nomsFoot = ['Mbappé', 'Griezmann', 'Giroud', 'Zidane', 'Kanté', 'Henry', 'Benzema', 'Lloris', 'Camavinga', 'Tchouaméni', 'Messi', 'Bellingham', 'De Bruyne', 'Haaland', 'Modric'];
+
+        // On mélange les tableaux pour créer des combinaisons uniques (ex: Zinedine Kanté)
+        shuffle($prenomsFoot);
+        shuffle($nomsFoot);
+
         $etudiantsDWWM = [];
-        for ($i = 1; $i <= 10; $i++) {
+        // On prend les 10 premiers pour la classe DWWM
+        for ($i = 0; $i < 10; $i++) {
             $etudiant = new User();
-            $etudiant->setEmail("dwwm$i@presenceflow.com");
-            $etudiant->setNom("NomDWWM$i");
-            $etudiant->setPrenom("Prenom$i");
+            $etudiant->setEmail(strtolower(str_replace('\'', '', $prenomsFoot[$i])) . '.' . strtolower($nomsFoot[$i]) . '@presenceflow.com');
+            $etudiant->setNom($nomsFoot[$i]);
+            $etudiant->setPrenom($prenomsFoot[$i]);
             $etudiant->setRoles(['ROLE_ETUDIANT']);
             $etudiant->setIsArchived(false);
             $etudiant->setPassword($this->passwordHasher->hashPassword($etudiant, 'etudiant123'));
             
             $classeDWWM->addEtudiant($etudiant);
-            
             $manager->persist($etudiant);
             $etudiantsDWWM[] = $etudiant;
         }
 
         $etudiantsCDA = [];
-        for ($i = 1; $i <= 5; $i++) {
+        // On prend les 5 suivants pour la classe CDA
+        for ($i = 10; $i < 15; $i++) {
             $etudiant = new User();
-            $etudiant->setEmail("cda$i@presenceflow.com");
-            $etudiant->setNom("NomCDA$i");
-            $etudiant->setPrenom("Prenom$i");
+            $etudiant->setEmail(strtolower(str_replace('\'', '', $prenomsFoot[$i])) . '.' . strtolower($nomsFoot[$i]) . '@presenceflow.com');
+            $etudiant->setNom($nomsFoot[$i]);
+            $etudiant->setPrenom($prenomsFoot[$i]);
             $etudiant->setRoles(['ROLE_ETUDIANT']);
             $etudiant->setIsArchived(false);
             $etudiant->setPassword($this->passwordHasher->hashPassword($etudiant, 'etudiant123'));
             
             $classeCDA->addEtudiant($etudiant);
-            
             $manager->persist($etudiant);
             $etudiantsCDA[] = $etudiant;
         }
 
         // ---------------------------------------------------------
-        // 6. SESSIONS DE COURS & GÉNÉRATION DES ÉMARGEMENTS
+        // 6. SESSIONS, ÉMARGEMENTS & JUSTIFICATIFS (Données de test)
         // ---------------------------------------------------------
         $sessionsData = [
-            ['date' => '-1 day', 'debut' => '09:00:00', 'fin' => '12:30:00', 'formateur' => $marie, 'matiere' => $matieres[0], 'classe' => $classeDWWM, 'etudiants' => $etudiantsDWWM],
-            ['date' => 'today', 'debut' => '08:00:00', 'fin' => '12:00:00', 'formateur' => $arnault, 'matiere' => $matieres[1], 'classe' => $classeCDA, 'etudiants' => $etudiantsCDA],
-            ['date' => 'today', 'debut' => '14:00:00', 'fin' => '17:30:00', 'formateur' => $marie, 'matiere' => $matieres[2], 'classe' => $classeDWWM, 'etudiants' => $etudiantsDWWM],
-            ['date' => '+1 day', 'debut' => '09:00:00', 'fin' => '12:30:00', 'formateur' => $arnault, 'matiere' => $matieres[3], 'classe' => $classeDWWM, 'etudiants' => $etudiantsDWWM],
+            ['date' => '-2 days', 'debut' => '09:00:00', 'fin' => '12:30:00', 'formateur' => $marie, 'matiere' => $matieres[0], 'classe' => $classeDWWM, 'etudiants' => $etudiantsDWWM],
+            ['date' => '-1 day', 'debut' => '08:00:00', 'fin' => '12:00:00', 'formateur' => $arnault, 'matiere' => $matieres[1], 'classe' => $classeCDA, 'etudiants' => $etudiantsCDA],
+            ['date' => 'today', 'debut' => '09:00:00', 'fin' => '12:30:00', 'formateur' => $marie, 'matiere' => $matieres[2], 'classe' => $classeDWWM, 'etudiants' => $etudiantsDWWM],
+            ['date' => 'today', 'debut' => '14:00:00', 'fin' => '17:30:00', 'formateur' => $arnault, 'matiere' => $matieres[3], 'classe' => $classeDWWM, 'etudiants' => $etudiantsDWWM], // En cours ou à venir selon l'heure
         ];
 
+        $motifsAbsence = ["Malade, certificat joint.", "Panne de RER A.", "Urgence familiale.", "Panne de réveil."];
+
         foreach ($sessionsData as $data) {
+            $sessionDate = current((new \DateTimeImmutable($data['date']))->setTime(0,0));
+            $isSessionPasse = (new \DateTimeImmutable('now')) > new \DateTimeImmutable($data['date'] . ' ' . $data['debut']);
+
             $session = new SessionCours();
             $session->setDateCours(new \DateTimeImmutable($data['date']));
             $session->setHeureDebut(new \DateTimeImmutable($data['debut']));
@@ -158,16 +171,55 @@ class AppFixtures extends Fixture
             $session->setFormateur($data['formateur']);
             $session->setMatiere($data['matiere']);
             $session->setClasse($data['classe']);
-
             $manager->persist($session);
 
             foreach ($data['etudiants'] as $etudiant) {
                 $emargement = new Emargement();
                 $emargement->setSession($session);
                 $emargement->setEtudiant($etudiant);
-                $emargement->setStatut('EN_ATTENTE');
+                
+                // Si la session est passée, on simule des présences réalistes
+                if ($isSessionPasse) {
+                    $rand = mt_rand(1, 100);
+                    if ($rand <= 75) {
+                        $emargement->setStatut('PRESENT');
+                        $emargement->setHeureSignature(new \DateTimeImmutable($data['date'] . ' ' . $data['debut']));
+                    } elseif ($rand <= 85) {
+                        $emargement->setStatut('RETARD');
+                        $emargement->setHeureSignature((new \DateTimeImmutable($data['date'] . ' ' . $data['debut']))->modify('+25 minutes'));
+                    } else {
+                        $emargement->setStatut('ABSENT');
+                    }
+                } else {
+                    $emargement->setStatut('EN_ATTENTE');
+                }
                 
                 $manager->persist($emargement);
+
+                // --- GÉNÉRATION DES JUSTIFICATIFS ---
+                // Si l'étudiant est absent ou en retard, il y a 60% de chances qu'il soumette un justificatif
+                if (in_array($emargement->getStatut(), ['ABSENT', 'RETARD']) && mt_rand(1, 100) <= 60) {
+                    $justificatif = new Justificatif();
+                    $justificatif->setEmargement($emargement);
+                    $justificatif->setUrlFichier('dummy_certificat.pdf');
+                    $justificatif->setMotifAbsence($motifsAbsence[array_rand($motifsAbsence)]);
+                    
+                    // Date de soumission aléatoire entre le cours et maintenant
+                    $justificatif->setDateSoumission(new \DateTimeImmutable('-' . mt_rand(1, 24) . ' hours'));
+
+                    // Statut du justificatif : En attente, Validé, ou Refusé
+                    $jRand = mt_rand(1, 100);
+                    if ($jRand <= 50) {
+                        $justificatif->setStatut('EN_ATTENTE');
+                    } elseif ($jRand <= 80) {
+                        $justificatif->setStatut('VALIDE');
+                    } else {
+                        $justificatif->setStatut('REFUSE');
+                        $justificatif->setMotifRefus('Le document transmis est illisible. Merci de renvoyer une photo nette.');
+                    }
+
+                    $manager->persist($justificatif);
+                }
             }
         }
 
