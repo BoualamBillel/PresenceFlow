@@ -15,7 +15,7 @@ class HomeController extends AbstractController
         }
 
         if ($this->isGranted('ROLE_ADMIN')) {
-            return $this->redirectToRoute('#');
+            return $this->redirectToRoute('app_admin_dashboard');
         }
 
         if ($this->isGranted('ROLE_FORMATEUR')) {

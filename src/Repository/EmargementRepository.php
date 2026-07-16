@@ -16,28 +16,27 @@ class EmargementRepository extends ServiceEntityRepository
         parent::__construct($registry, Emargement::class);
     }
 
-//    /**
-//     * @return Emargement[] Returns an array of Emargement objects
-//     */
-//    public function findByExampleField($value): array
-//    {
-//        return $this->createQueryBuilder('e')
-//            ->andWhere('e.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->orderBy('e.id', 'ASC')
-//            ->setMaxResults(10)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
+    /**
+     * @return Emargement[] Returns an array of Emargement objects
+     */
+    public function findForExport(?\App\Entity\Classe $classe, ?\App\Entity\User $etudiant): array
+    {
+        $qb = $this->createQueryBuilder('e')
+            ->join('e.session', 's')
+            ->join('e.etudiant', 'u')
+            ->orderBy('s.dateCours', 'DESC')
+            ->addOrderBy('u.nom', 'ASC');
 
-//    public function findOneBySomeField($value): ?Emargement
-//    {
-//        return $this->createQueryBuilder('e')
-//            ->andWhere('e.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->getQuery()
-//            ->getOneOrNullResult()
-//        ;
-//    }
+        if ($classe) {
+            $qb->andWhere('s.classe = :classe')
+                ->setParameter('classe', $classe);
+        }
+
+        if ($etudiant) {
+            $qb->andWhere('e.etudiant = :etudiant')
+                ->setParameter('etudiant', $etudiant);
+        }
+
+        return $qb->getQuery()->getResult();
+    }
 }
