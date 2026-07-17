@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\SessionCours;
 use App\Entity\Emargement;
+use App\Repository\SessionCoursRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -19,7 +20,7 @@ class EtudiantEmargementController extends AbstractController
     {
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
-        
+
         $this->denyAccessUnlessGranted('ROLE_ETUDIANT');
 
         if (!$user instanceof \App\Entity\User) {
@@ -31,7 +32,9 @@ class EtudiantEmargementController extends AbstractController
         $currentTime = $now->format('H:i:s');
 
         $classes = $user->getClasses();
+
         $currentSession = null;
+        $prochainesSessions = [];
 
         if (!$classes->isEmpty()) {
             $sessions = $em->getRepository(SessionCours::class)->createQueryBuilder('s')
@@ -44,13 +47,18 @@ class EtudiantEmargementController extends AbstractController
                 ->getResult();
 
             foreach ($sessions as $session) {
-                if ($currentTime <= $session->getHeureFin()->format('H:i:s')) {
+                $debut = $session->getHeureDebut()->format('H:i:s');
+                $fin = $session->getHeureFin()->format('H:i:s');
+
+                if ($currentTime >= $debut && $currentTime <= $fin) {
                     $currentSession = $session;
-                    break;
+                } elseif ($currentTime < $debut) {
+                    $prochainesSessions[] = $session;
                 }
             }
         }
 
+        // Récupération des émargements pour calculer les absences à justifier
         $emargements = $em->getRepository(Emargement::class)
             ->createQueryBuilder('e')
             ->join('e.session', 's')
@@ -63,9 +71,11 @@ class EtudiantEmargementController extends AbstractController
 
         return $this->render('etudiant/dashboard.html.twig', [
             'session' => $currentSession,
+            'prochainesSessions' => $prochainesSessions,
             'emargements' => $emargements,
         ]);
     }
+
 
     #[Route('/scanner', name: 'app_etudiant_scanner', methods: ['GET'])]
     public function scanner(): Response
@@ -85,7 +95,7 @@ class EtudiantEmargementController extends AbstractController
 
         if (!$session || !$session->isQrTokenValid()) {
             $this->addFlash('error', 'Le QR Code est invalide ou a expiré. Demandez au formateur de le régénérer.');
-            return $this->redirectToRoute('app_etudiant_dashboard'); 
+            return $this->redirectToRoute('app_etudiant_dashboard');
         }
 
         $emargement = $em->getRepository(Emargement::class)->findOneBy([
@@ -107,7 +117,7 @@ class EtudiantEmargementController extends AbstractController
         $em->flush();
 
         $this->addFlash('success', 'Présence validée : ' . $emargement->getStatut());
-        
+
         return $this->redirectToRoute('app_etudiant_dashboard');
     }
 }

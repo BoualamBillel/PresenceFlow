@@ -89,10 +89,12 @@ class AppFixtures extends Fixture
         // 4. MATIÈRES
         // ---------------------------------------------------------
         $nomsMatieres = [
-            'Algorithmie Avancée',
             'Architecture Logicielle',
             'Développement React/Node',
-            'Administration PostgreSQL'
+            'Administration PostgreSQL',
+            'Programmation bas niveau en C',
+            'Architecture des Systèmes Embarqués',
+            'Administration Arch Linux / EndeavourOS'
         ];
         
         $matieres = [];
@@ -105,17 +107,15 @@ class AppFixtures extends Fixture
         }
 
         // ---------------------------------------------------------
-        // 5. ÉTUDIANTS (Génération réaliste orientée Football)
+        // 5. ÉTUDIANTS
         // ---------------------------------------------------------
         $prenomsFoot = ['Kylian', 'Antoine', 'Olivier', 'Zinedine', 'N\'Golo', 'Thierry', 'Karim', 'Hugo', 'Eduardo', 'Aurélien', 'Lionel', 'Jude', 'Kevin', 'Erling', 'Luka'];
         $nomsFoot = ['Mbappé', 'Griezmann', 'Giroud', 'Zidane', 'Kanté', 'Henry', 'Benzema', 'Lloris', 'Camavinga', 'Tchouaméni', 'Messi', 'Bellingham', 'De Bruyne', 'Haaland', 'Modric'];
 
-        // On mélange les tableaux pour créer des combinaisons uniques (ex: Zinedine Kanté)
         shuffle($prenomsFoot);
         shuffle($nomsFoot);
 
         $etudiantsDWWM = [];
-        // On prend les 10 premiers pour la classe DWWM
         for ($i = 0; $i < 10; $i++) {
             $etudiant = new User();
             $etudiant->setEmail(strtolower(str_replace('\'', '', $prenomsFoot[$i])) . '.' . strtolower($nomsFoot[$i]) . '@presenceflow.com');
@@ -131,7 +131,6 @@ class AppFixtures extends Fixture
         }
 
         $etudiantsCDA = [];
-        // On prend les 5 suivants pour la classe CDA
         for ($i = 10; $i < 15; $i++) {
             $etudiant = new User();
             $etudiant->setEmail(strtolower(str_replace('\'', '', $prenomsFoot[$i])) . '.' . strtolower($nomsFoot[$i]) . '@presenceflow.com');
@@ -147,82 +146,106 @@ class AppFixtures extends Fixture
         }
 
         // ---------------------------------------------------------
-        // 6. SESSIONS, ÉMARGEMENTS & JUSTIFICATIFS (Données de test)
+        // 6. GÉNÉRATION MASSIVE DES SESSIONS & ÉMARGEMENTS
         // ---------------------------------------------------------
-        $sessionsData = [
-            ['date' => '-2 days', 'debut' => '09:00:00', 'fin' => '12:30:00', 'formateur' => $marie, 'matiere' => $matieres[0], 'classe' => $classeDWWM, 'etudiants' => $etudiantsDWWM],
-            ['date' => '-1 day', 'debut' => '08:00:00', 'fin' => '12:00:00', 'formateur' => $arnault, 'matiere' => $matieres[1], 'classe' => $classeCDA, 'etudiants' => $etudiantsCDA],
-            ['date' => 'today', 'debut' => '09:00:00', 'fin' => '12:30:00', 'formateur' => $marie, 'matiere' => $matieres[2], 'classe' => $classeDWWM, 'etudiants' => $etudiantsDWWM],
-            ['date' => 'today', 'debut' => '14:00:00', 'fin' => '17:30:00', 'formateur' => $arnault, 'matiere' => $matieres[3], 'classe' => $classeDWWM, 'etudiants' => $etudiantsDWWM], // En cours ou à venir selon l'heure
+        $motifsAbsence = [
+            "Malade, certificat médical joint.", 
+            "Panne de transports en commun.", 
+            "Urgence familiale.", 
+            "Blessure lors du match de foot ce week-end.",
+            "Rendez-vous médical spécialiste."
         ];
 
-        $motifsAbsence = ["Malade, certificat joint.", "Panne de RER A.", "Urgence familiale.", "Panne de réveil."];
+        // On définit une période : d'il y a 30 jours jusqu'à dans 30 jours
+        $startDate = new \DateTimeImmutable('-30 days');
+        $endDate = new \DateTimeImmutable('+30 days');
+        $interval = new \DateInterval('P1D');
+        $period = new \DatePeriod($startDate, $interval, $endDate);
 
-        foreach ($sessionsData as $data) {
-            $sessionDate = current((new \DateTimeImmutable($data['date']))->setTime(0,0));
-            $isSessionPasse = (new \DateTimeImmutable('now')) > new \DateTimeImmutable($data['date'] . ' ' . $data['debut']);
+        $formateurs = [$marie, $arnault];
 
-            $session = new SessionCours();
-            $session->setDateCours(new \DateTimeImmutable($data['date']));
-            $session->setHeureDebut(new \DateTimeImmutable($data['debut']));
-            $session->setHeureFin(new \DateTimeImmutable($data['fin']));
-            $session->setToleranceRetard(15);
-            $session->setEmplacement('Salle ' . rand(100, 305));
-            $session->setFormateur($data['formateur']);
-            $session->setMatiere($data['matiere']);
-            $session->setClasse($data['classe']);
-            $manager->persist($session);
-
-            foreach ($data['etudiants'] as $etudiant) {
-                $emargement = new Emargement();
-                $emargement->setSession($session);
-                $emargement->setEtudiant($etudiant);
-                
-                // Si la session est passée, on simule des présences réalistes
-                if ($isSessionPasse) {
-                    $rand = mt_rand(1, 100);
-                    if ($rand <= 75) {
-                        $emargement->setStatut('PRESENT');
-                        $emargement->setHeureSignature(new \DateTimeImmutable($data['date'] . ' ' . $data['debut']));
-                    } elseif ($rand <= 85) {
-                        $emargement->setStatut('RETARD');
-                        $emargement->setHeureSignature((new \DateTimeImmutable($data['date'] . ' ' . $data['debut']))->modify('+25 minutes'));
-                    } else {
-                        $emargement->setStatut('ABSENT');
-                    }
-                } else {
-                    $emargement->setStatut('EN_ATTENTE');
-                }
-                
-                $manager->persist($emargement);
-
-                // --- GÉNÉRATION DES JUSTIFICATIFS ---
-                // Si l'étudiant est absent ou en retard, il y a 60% de chances qu'il soumette un justificatif
-                if (in_array($emargement->getStatut(), ['ABSENT', 'RETARD']) && mt_rand(1, 100) <= 60) {
-                    $justificatif = new Justificatif();
-                    $justificatif->setEmargement($emargement);
-                    $justificatif->setUrlFichier('dummy_certificat.pdf');
-                    $justificatif->setMotifAbsence($motifsAbsence[array_rand($motifsAbsence)]);
-                    
-                    // Date de soumission aléatoire entre le cours et maintenant
-                    $justificatif->setDateSoumission(new \DateTimeImmutable('-' . mt_rand(1, 24) . ' hours'));
-
-                    // Statut du justificatif : En attente, Validé, ou Refusé
-                    $jRand = mt_rand(1, 100);
-                    if ($jRand <= 50) {
-                        $justificatif->setStatut('EN_ATTENTE');
-                    } elseif ($jRand <= 80) {
-                        $justificatif->setStatut('VALIDE');
-                    } else {
-                        $justificatif->setStatut('REFUSE');
-                        $justificatif->setMotifRefus('Le document transmis est illisible. Merci de renvoyer une photo nette.');
-                    }
-
-                    $manager->persist($justificatif);
-                }
+        foreach ($period as $date) {
+            // Exclusion des week-ends (1 = Lundi, 7 = Dimanche)
+            if ((int)$date->format('N') >= 6) {
+                continue; 
             }
+
+            // Génération de 2 sessions par jour pour DWWM (Matin et Après-midi)
+            $this->generateSession($manager, $date, '09:00:00', '12:30:00', $formateurs[array_rand($formateurs)], $matieres[array_rand($matieres)], $classeDWWM, $etudiantsDWWM, $motifsAbsence);
+            $this->generateSession($manager, $date, '14:00:00', '17:30:00', $formateurs[array_rand($formateurs)], $matieres[array_rand($matieres)], $classeDWWM, $etudiantsDWWM, $motifsAbsence);
+
+            // Génération de 2 sessions par jour pour CDA (Matin et Après-midi)
+            $this->generateSession($manager, $date, '09:00:00', '12:30:00', $formateurs[array_rand($formateurs)], $matieres[array_rand($matieres)], $classeCDA, $etudiantsCDA, $motifsAbsence);
+            $this->generateSession($manager, $date, '14:00:00', '17:30:00', $formateurs[array_rand($formateurs)], $matieres[array_rand($matieres)], $classeCDA, $etudiantsCDA, $motifsAbsence);
         }
 
         $manager->flush();
+    }
+
+    /**
+     * Méthode utilitaire pour générer une session, ses émargements et justificatifs
+     */
+    private function generateSession(ObjectManager $manager, \DateTimeImmutable $date, string $heureDebut, string $heureFin, User $formateur, Matiere $matiere, Classe $classe, array $etudiants, array $motifsAbsence): void
+    {
+        $now = new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris'));
+        $debutSession = new \DateTimeImmutable($date->format('Y-m-d') . ' ' . $heureDebut, new \DateTimeZone('Europe/Paris'));
+        $isSessionPasse = $now > $debutSession;
+
+        $session = new SessionCours();
+        $session->setDateCours($date);
+        $session->setHeureDebut($debutSession);
+        $session->setHeureFin(new \DateTimeImmutable($date->format('Y-m-d') . ' ' . $heureFin, new \DateTimeZone('Europe/Paris')));
+        $session->setToleranceRetard(15);
+        $session->setEmplacement('Salle ' . rand(100, 305));
+        $session->setFormateur($formateur);
+        $session->setMatiere($matiere);
+        $session->setClasse($classe);
+        $manager->persist($session);
+
+        foreach ($etudiants as $etudiant) {
+            $emargement = new Emargement();
+            $emargement->setSession($session);
+            $emargement->setEtudiant($etudiant);
+            
+            if ($isSessionPasse) {
+                $rand = mt_rand(1, 100);
+                if ($rand <= 80) { // 80% de présence
+                    $emargement->setStatut('PRESENT');
+                    $emargement->setHeureSignature($debutSession);
+                } elseif ($rand <= 90) { // 10% de retard
+                    $emargement->setStatut('RETARD');
+                    $emargement->setHeureSignature($debutSession->modify('+' . mt_rand(16, 45) . ' minutes'));
+                } else { // 10% d'absence
+                    $emargement->setStatut('ABSENT');
+                }
+            } else {
+                $emargement->setStatut('EN_ATTENTE');
+            }
+            
+            $manager->persist($emargement);
+
+            // Génération des justificatifs pour les absents et les retards
+            if (in_array($emargement->getStatut(), ['ABSENT', 'RETARD']) && mt_rand(1, 100) <= 60) {
+                $justificatif = new Justificatif();
+                $justificatif->setEmargement($emargement);
+                $justificatif->setUrlFichier('dummy_certificat.pdf');
+                $justificatif->setMotifAbsence($motifsAbsence[array_rand($motifsAbsence)]);
+                
+                // Soumission dans les 48h suivant le cours
+                $justificatif->setDateSoumission($debutSession->modify('+' . mt_rand(1, 48) . ' hours'));
+
+                $jRand = mt_rand(1, 100);
+                if ($jRand <= 30) {
+                    $justificatif->setStatut('EN_ATTENTE');
+                } elseif ($jRand <= 80) {
+                    $justificatif->setStatut('VALIDE');
+                } else {
+                    $justificatif->setStatut('REFUSE');
+                    $justificatif->setMotifRefus('Document non conforme. Merci de fournir un justificatif officiel.');
+                }
+
+                $manager->persist($justificatif);
+            }
+        }
     }
 }
