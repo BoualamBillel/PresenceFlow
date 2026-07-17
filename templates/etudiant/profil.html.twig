@@ -1,0 +1,151 @@
+{% extends 'etudiant_base.html.twig' %}
+
+{% block title %}Profil - PresenceFlow{% endblock %}
+
+{# Si tu as dynamisé ton header dans etudiant_base.html.twig, sinon ignore cette ligne #}
+{% block header_title %}Profil{% endblock %}
+
+{% block body %}
+<main class="flex-grow p-6 flex flex-col items-center relative pb-32 w-full max-w-md mx-auto font-sans">
+    
+    {# --- AVATAR (Génération automatique des initiales) --- #}
+    {% set initials = (app.user.prenom|first ~ app.user.nom|first)|upper %}
+    <div class="w-20 h-20 bg-gray-200 rounded-3xl flex items-center justify-center mb-8 shadow-sm">
+        <span class="text-2xl font-black text-black">{{ initials }}</span>
+    </div>
+
+    {# --- SECTION 1 : INFORMATIONS PERSONNELLES --- #}
+    <div class="w-full text-center mb-8">
+        <h3 class="text-[13px] font-bold text-black border-b-[2px] border-black inline-block pb-1 px-4 mb-5">
+            Informations Personnelles
+        </h3>
+        
+        <h2 class="text-3xl font-black text-black mb-3">
+            {{ app.user.prenom }} {{ app.user.nom }}
+        </h2>
+        
+        <div class="inline-block border border-black px-6 py-1 text-[11px] font-bold tracking-widest uppercase">
+            Eleve
+        </div>
+    </div>
+
+    {# Champ Email (Clic = Ouverture Modale) #}
+    <div class="w-full mb-10">
+        <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-widest mb-1.5">Email</label>
+        <button type="button" onclick="openModal('email-modal')" class="flex justify-between items-center w-full p-4 border border-black bg-white hover:bg-gray-50 transition-colors group">
+            <span class="text-xs font-bold text-black tracking-wide">{{ app.user.email|default('lucas.bergval@ecole.fr')|upper }}</span>
+            <svg class="w-5 h-5 text-black group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+        </button>
+    </div>
+
+    {# --- SECTION 2 : SÉCURITÉ --- #}
+    <div class="w-full text-center mb-5">
+        <h3 class="text-[13px] font-bold text-black border-b-[2px] border-black inline-block pb-1 px-8">
+            Sécurité
+        </h3>
+    </div>
+
+    {# Champ Mot de passe (Clic = Ouverture Modale) #}
+    <div class="w-full">
+        <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-widest mb-1.5">Mot de passe</label>
+        <button type="button" onclick="openModal('password-modal')" class="flex justify-between items-center w-full p-4 border border-black bg-white hover:bg-gray-50 transition-colors group">
+            <span class="text-lg font-black text-black tracking-widest mt-1">••••••••••••</span>
+            <svg class="w-5 h-5 text-black group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+        </button>
+    </div>
+
+</main>
+
+{# ========================================== #}
+{# MODALES D'ÉDITION (Cachées par défaut)     #}
+{# ========================================== #}
+
+{# 1. Modale Édition Email #}
+<div id="email-modal" class="fixed inset-0 z-50 hidden flex flex-col justify-end sm:justify-center items-center bg-black/40 backdrop-blur-sm transition-opacity">
+    <div class="bg-white w-full max-w-md sm:rounded-2xl rounded-t-2xl p-6 sm:p-8 border-t-2 sm:border-2 border-black transform transition-transform translate-y-full sm:translate-y-0" id="email-modal-content">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-xl font-black text-black">Modifier l'email</h3>
+            <button onclick="closeModal('email-modal')" class="text-gray-500 hover:text-black">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+        
+        {# Formulaire Symfony à intégrer ici côté Backend #}
+        <form method="post" action="" class="space-y-4">
+            <div>
+                <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">Nouvel Email</label>
+                <input type="email" name="new_email" value="{{ app.user.email|default('') }}" class="w-full p-4 border border-black bg-white focus:ring-2 focus:ring-black outline-none text-sm font-bold text-black" required>
+            </div>
+            <button type="submit" class="w-full bg-black text-white font-bold py-4 text-sm tracking-widest uppercase hover:bg-gray-800 transition-colors">
+                Enregistrer
+            </button>
+        </form>
+    </div>
+</div>
+
+{# 2. Modale Édition Mot de Passe #}
+<div id="password-modal" class="fixed inset-0 z-50 hidden flex flex-col justify-end sm:justify-center items-center bg-black/40 backdrop-blur-sm transition-opacity">
+    <div class="bg-white w-full max-w-md sm:rounded-2xl rounded-t-2xl p-6 sm:p-8 border-t-2 sm:border-2 border-black transform transition-transform translate-y-full sm:translate-y-0" id="password-modal-content">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-xl font-black text-black">Modifier le mot de passe</h3>
+            <button onclick="closeModal('password-modal')" class="text-gray-500 hover:text-black">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+        
+        {# Formulaire Symfony à intégrer ici côté Backend #}
+        <form method="post" action="" class="space-y-4">
+            <div>
+                <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">Mot de passe actuel</label>
+                <input type="password" name="old_password" class="w-full p-4 border border-black bg-white focus:ring-2 focus:ring-black outline-none text-sm font-bold text-black" required>
+            </div>
+            <div>
+                <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">Nouveau mot de passe</label>
+                <input type="password" name="new_password" class="w-full p-4 border border-black bg-white focus:ring-2 focus:ring-black outline-none text-sm font-bold text-black" required>
+            </div>
+            <button type="submit" class="w-full bg-black text-white font-bold py-4 text-sm tracking-widest uppercase mt-4 hover:bg-gray-800 transition-colors">
+                Mettre à jour
+            </button>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+    // Logique Vanilla JS pour gérer l'ouverture et la fermeture fluide des modales
+    function openModal(modalId) {
+        const modal = document.getElementById(modalId);
+        const content = document.getElementById(modalId + '-content');
+        
+        modal.classList.remove('hidden');
+        
+        // Petit délai pour déclencher l'animation CSS
+        setTimeout(() => {
+            content.classList.remove('translate-y-full');
+        }, 10);
+    }
+
+    function closeModal(modalId) {
+        const modal = document.getElementById(modalId);
+        const content = document.getElementById(modalId + '-content');
+        
+        content.classList.add('translate-y-full');
+        
+        // On attend la fin de l'animation pour cacher complètement la modale
+        setTimeout(() => {
+            modal.classList.add('hidden');
+        }, 300);
+    }
+
+    // Fermer la modale si on clique à l'extérieur du bloc blanc
+    document.getElementById('email-modal').addEventListener('click', function(e) {
+        if(e.target === this) closeModal('email-modal');
+    });
+    document.getElementById('password-modal').addEventListener('click', function(e) {
+        if(e.target === this) closeModal('password-modal');
+    });
+</script>
+{% endblock %}
