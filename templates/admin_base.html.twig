@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -7,28 +8,45 @@
     <script src="https://cdn.tailwindcss.com"></script>
     {% block stylesheets %}{% endblock %}
 </head>
+
 <body class="bg-slate-50 min-h-screen flex flex-col font-sans pb-20">
 
     {% set current_route = app.request.attributes.get('_route')|default('') %}
 
     {# --- OVERLAY & SIDEBAR (Cachée par défaut sur mobile) --- #}
     <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-40 hidden transition-opacity opacity-0"></div>
-    <aside id="sidebar" class="fixed inset-y-0 left-0 w-72 bg-white shadow-2xl z-50 transform -translate-x-full transition-transform duration-300 flex flex-col">
+    <aside id="sidebar"
+        class="fixed inset-y-0 left-0 w-72 bg-white shadow-2xl z-50 transform -translate-x-full transition-transform duration-300 flex flex-col">
         <div class="p-6 border-b border-slate-100">
             <h2 class="text-2xl font-black text-slate-900 tracking-tight">Administration</h2>
         </div>
-        
+
         <nav class="flex-1 p-4 space-y-2 mt-4">
-            <a href="{{ path('app_filiere_index') }}" class="flex items-center space-x-4 px-4 py-3 rounded-lg transition-colors {{ current_route starts with 'app_filiere_' ? 'text-slate-900 font-bold bg-slate-100' : 'text-slate-500 font-semibold hover:bg-slate-50' }}">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+            <a href="{{ path('app_filiere_index') }}"
+                class="flex items-center space-x-4 px-4 py-3 rounded-lg transition-colors {{ current_route starts with 'app_filiere_' ? 'text-slate-900 font-bold bg-slate-100' : 'text-slate-500 font-semibold hover:bg-slate-50' }}">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253">
+                    </path>
+                </svg>
                 <span>FILIÈRES</span>
             </a>
-            <a href="{{ path('app_classe_index') }}" class="flex items-center space-x-4 px-4 py-3 rounded-lg transition-colors {{ current_route starts with 'app_classe_' ? 'text-slate-900 font-bold bg-slate-100' : 'text-slate-500 font-semibold hover:bg-slate-50' }}">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+            <a href="{{ path('app_classe_index') }}"
+                class="flex items-center space-x-4 px-4 py-3 rounded-lg transition-colors {{ current_route starts with 'app_classe_' ? 'text-slate-900 font-bold bg-slate-100' : 'text-slate-500 font-semibold hover:bg-slate-50' }}">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z">
+                    </path>
+                </svg>
                 <span>CLASSES</span>
             </a>
-            <a href="{{ path('app_session_cours_index')}}" class="flex items-center space-x-4 px-4 py-3 rounded-lg transition-colors {{ current_route starts with 'app_planning_' ? 'text-slate-900 font-bold bg-slate-100' : 'text-slate-500 font-semibold hover:bg-slate-50' }}">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+            <a href="{{ path('app_session_cours_index')}}"
+                class="flex items-center space-x-4 px-4 py-3 rounded-lg transition-colors {{ current_route starts with 'app_planning_' ? 'text-slate-900 font-bold bg-slate-100' : 'text-slate-500 font-semibold hover:bg-slate-50' }}">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
+                    </path>
+                </svg>
                 <span>SESSIONS</span>
             </a>
         </nav>
@@ -36,56 +54,85 @@
     </aside>
 
     {# --- HEADER ADMIN FLUIDE --- #}
-    <header class="bg-white px-4 sm:px-6 py-4 flex justify-between items-center sticky top-0 z-30 border-b border-slate-200">
+    <header
+        class="bg-white px-4 sm:px-6 py-4 flex justify-between items-center sticky top-0 z-30 border-b border-slate-200">
         <button id="btn-burger" class="text-slate-800 hover:text-black relative">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6h16M4 12h16M4 18h16"></path></svg>
-        </button>
-        <h1 class="text-base font-black text-slate-900 tracking-wide">{% block header_title %}Administration{% endblock %}</h1>
-        <a href="{{ path('app_logout') }}" class="text-slate-800 hover:text-red-600 transition-colors duration-200" title="Se déconnecter">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6h16M4 12h16M4 18h16">
+                </path>
+            </svg>
+        </button>
+        <h1 class="text-base font-black text-slate-900 tracking-wide">{% block header_title %}Administration{% endblock
+            %}</h1>
+        <a href="{{ path('app_logout') }}" class="text-slate-800 hover:text-red-600 transition-colors duration-200"
+            title="Se déconnecter">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
+                </path>
             </svg>
         </a>
     </header>
 
     <main class="flex-grow p-4 sm:p-6 flex flex-col relative pb-32">
-        
+
         {# Flashes #}
         <div class="w-full max-w-sm mx-auto mb-6 space-y-2">
-        {% for label, messages in app.flashes %}
+            {% for label, messages in app.flashes %}
             {% for message in messages %}
-                <div class="bg-white border-2 {{ label == 'success' ? 'border-emerald-500' : 'border-red-500' }} p-4 flex items-center justify-between shadow-sm rounded-xl flash-message">
-                    <div class="flex items-center space-x-3">
-                        <p class="text-xs font-bold text-slate-900 uppercase tracking-wide">{{ message }}</p>
-                    </div>
+            <div
+                class="bg-white border-2 {{ label == 'success' ? 'border-emerald-500' : 'border-red-500' }} p-4 flex items-center justify-between shadow-sm rounded-xl flash-message">
+                <div class="flex items-center space-x-3">
+                    <p class="text-xs font-bold text-slate-900 uppercase tracking-wide">{{ message }}</p>
                 </div>
+            </div>
             {% endfor %}
-        {% endfor %}
+            {% endfor %}
         </div>
 
         {% block admin_content %}{% endblock %}
-        
+
     </main>
 
     {# --- BOTTOM NAV ADMIN --- #}
     <nav class="fixed bottom-0 w-full bg-white border-t border-slate-200 flex justify-around py-3 px-2 z-50">
-        <a href="{{ path('app_admin_dashboard') }}" class="flex flex-col items-center transition-colors {{ current_route starts with 'app_admin_dashboard' ? 'text-slate-900' : 'text-slate-400 hover:text-slate-900' }}">
-            <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+        <a href="{{ path('app_admin_dashboard') }}"
+            class="flex flex-col items-center transition-colors {{ current_route starts with 'app_admin_dashboard' ? 'text-slate-900' : 'text-slate-400 hover:text-slate-900' }}">
+            <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                    d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z">
+                </path>
+            </svg>
             <span class="text-[9px] font-bold uppercase tracking-wider">Dashboard</span>
         </a>
-        
-        <a href="#" class="flex flex-col items-center transition-colors {{ current_route starts with 'app_user_' ? 'text-slate-900' : 'text-slate-400 hover:text-slate-900' }}">
-            <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+
+        <a href="{{ path('app_admin_users') }}"
+            class="flex flex-col items-center transition-colors {{ current_route starts with 'app_user_' ? 'text-slate-900' : 'text-slate-400 hover:text-slate-900' }}">
+            <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                    d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z">
+                </path>
+            </svg>
             <span class="text-[9px] font-bold uppercase tracking-wider">Utilisateurs</span>
         </a>
-        
-        <a href="{{ path('app_classe_index') }}" class="flex flex-col items-center transition-colors {{ current_route starts with 'app_classe_' ? 'text-slate-900' : 'text-slate-400 hover:text-slate-900' }}">
-            <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+
+        <a href="{{ path('app_classe_index') }}"
+            class="flex flex-col items-center transition-colors {{ current_route starts with 'app_classe_' ? 'text-slate-900' : 'text-slate-400 hover:text-slate-900' }}">
+            <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z">
+                </path>
+            </svg>
             <span class="text-[9px] font-bold uppercase tracking-wider">Classes</span>
         </a>
-        
-        <a href="{{ path('admin_justificatif_index') }}" class="flex flex-col items-center transition-colors {{ current_route starts with 'admin_justificatif_' ? 'text-slate-900' : 'text-slate-400 hover:text-slate-900' }}">
-            <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+
+        <a href="{{ path('admin_justificatif_index') }}"
+            class="flex flex-col items-center transition-colors {{ current_route starts with 'admin_justificatif_' ? 'text-slate-900' : 'text-slate-400 hover:text-slate-900' }}">
+            <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                </path>
+            </svg>
             <span class="text-[9px] font-bold uppercase tracking-wider">Justifs</span>
         </a>
     </nav>
@@ -105,7 +152,7 @@
                     setTimeout(() => overlay.classList.add('hidden'), 300);
                 }
             }
-            if(btnBurger && sidebar && overlay) {
+            if (btnBurger && sidebar && overlay) {
                 btnBurger.addEventListener('click', toggleMenu);
                 overlay.addEventListener('click', toggleMenu);
             }
@@ -113,4 +160,5 @@
     </script>
     {% block javascripts %}{% endblock %}
 </body>
+
 </html>

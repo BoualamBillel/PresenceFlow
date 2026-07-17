@@ -61,6 +61,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Emargement::class, mappedBy: 'etudiant', orphanRemoval: true)]
     private Collection $emargements;
 
+    #[ORM\Column]
+    private ?bool $mustChangePassword = true;
+
     public function __construct()
     {
         $this->classes = new ArrayCollection();
@@ -262,6 +265,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
                 $emargement->setEtudiant(null);
             }
         }
+
+        return $this;
+    }
+
+    public function isMustChangePassword(): ?bool
+    {
+        return $this->mustChangePassword;
+    }
+
+    public function setMustChangePassword(bool $mustChangePassword): static
+    {
+        $this->mustChangePassword = $mustChangePassword;
 
         return $this;
     }
