@@ -4,11 +4,12 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Form\ForcePasswordChangeType;
+use App\Security\RoleHomeRedirector;
+use App\Service\UserManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
@@ -17,13 +18,9 @@ class SecurityController extends AbstractController
     #[Route(path: '/login', name: 'app_login')]
     public function login(AuthenticationUtils $authenticationUtils): Response
     {
-        $error = $authenticationUtils->getLastAuthenticationError();
-
-        $lastUsername = $authenticationUtils->getLastUsername();
-
         return $this->render('security/login.html.twig', [
-            'last_username' => $lastUsername,
-            'error' => $error,
+            'last_username' => $authenticationUtils->getLastUsername(),
+            'error' => $authenticationUtils->getLastAuthenticationError(),
         ]);
     }
 
@@ -35,9 +32,10 @@ class SecurityController extends AbstractController
 
     #[Route('/forcer-mot-de-passe', name: 'app_force_password_change')]
     public function forcePasswordChange(
-        Request $request, 
-        EntityManagerInterface $em, 
-        UserPasswordHasherInterface $hasher
+        Request $request,
+        EntityManagerInterface $em,
+        UserManager $userManager,
+        RoleHomeRedirector $roleHomeRedirector,
     ): Response {
         /** @var User|null $user */
         $user = $this->getUser();
@@ -50,28 +48,13 @@ class SecurityController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $newPassword = $form->get('newPassword')->getData();
-            
-            $user->setPassword($hasher->hashPassword($user, $newPassword));
-            
+            $userManager->changePassword($user, $form->get('newPassword')->getData());
             $user->setMustChangePassword(false);
-            
             $em->flush();
 
             $this->addFlash('success', 'Votre mot de passe a été sécurisé. Bienvenue !');
-            
-            $roles = $user->getRoles();
-            
-            if (in_array('ROLE_ADMIN', $roles, true)) {
-                return $this->redirectToRoute('app_admin_dashboard'); 
-            }
-            
-            if (in_array('ROLE_FORMATEUR', $roles, true)) {
-                return $this->redirectToRoute('app_formateur_dashboard'); 
-            }
-            
-            // Fallback logique : l'étudiant
-            return $this->redirectToRoute('app_etudiant_dashboard'); 
+
+            return $this->redirectToRoute($roleHomeRedirector->dashboardRouteFor($user));
         }
 
         return $this->render('security/force_password.html.twig', [

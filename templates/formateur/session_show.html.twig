@@ -126,7 +126,7 @@
 
                 {# --- TA JAUGE DE PRÉSENCE ORIGINALE --- #}
                 {% set totalEtudiants = session.emargements|length %}
-                {% set nbPresents = session.emargements|filter(e => e.statut == 'PRESENT' or e.statut == 'RETARD')|length %}
+                {% set nbPresents = session.emargements|filter(e => e.statut in [constant('App\\Enum\\EmargementStatut::PRESENT'), constant('App\\Enum\\EmargementStatut::RETARD')])|length %}
                 {% set pourcentage = totalEtudiants > 0 ? (nbPresents / totalEtudiants) * 100 : 0 %}
 
                 <div class="mb-8">
@@ -147,12 +147,13 @@
                     <div class="space-y-3">
                         {% for emargement in session.emargements %}
                         {% set etudiant = emargement.etudiant %}
-                        {% set isAttente = emargement.statut == 'EN_ATTENTE' %}
-                        {% set isPresent = emargement.statut == 'PRESENT' %}
-                        {% set isRetard = emargement.statut == 'RETARD' %}
-                        {% set isAbsent = emargement.statut == 'ABSENT' %}
-                        
-                        <div id="card-{{ emargement.id }}" onclick="openStatusModal({{ emargement.id }}, '{{ etudiant.prenom|escape('js') }}', '{{ etudiant.nom|escape('js') }}', '{{ emargement.statut }}', '{{ csrf_token('modifier' ~ emargement.id) }}')" 
+                        {% set statut = emargement_statut(emargement) %}
+                        {% set isAttente = statut == constant('App\\Enum\\EmargementStatut::EN_ATTENTE') %}
+                        {% set isPresent = statut == constant('App\\Enum\\EmargementStatut::PRESENT') %}
+                        {% set isRetard = statut == constant('App\\Enum\\EmargementStatut::RETARD') %}
+                        {% set isAbsent = statut == constant('App\\Enum\\EmargementStatut::ABSENT') %}
+
+                        <div id="card-{{ emargement.id }}" onclick="openStatusModal({{ emargement.id }}, '{{ etudiant.prenom|escape('js') }}', '{{ etudiant.nom|escape('js') }}', '{{ statut.value }}', '{{ csrf_token('modifier' ~ emargement.id) }}')"
                              class="flex items-center bg-white border {{ isAttente ? 'border-gray-200' : 'border-black' }} p-3 cursor-pointer hover:bg-gray-50 transition-colors">
                             
                             <div id="avatar-{{ emargement.id }}" class="w-8 h-8 rounded-full text-[10px] font-black flex items-center justify-center mr-3 border

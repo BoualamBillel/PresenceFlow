@@ -22,9 +22,10 @@
             </p>
 
             {# Rappel du statut actuel #}
-            <div class="flex items-center p-3 mb-8 border {{ emargement.statut == 'ABSENT' ? 'border-red-500 bg-red-50' : 'border-orange-400 bg-orange-50' }}">
-                <span class="text-[10px] font-black uppercase tracking-widest {{ emargement.statut == 'ABSENT' ? 'text-red-600' : 'text-orange-600' }}">
-                    État de la session : {{ emargement.statut }}
+            {% set statut = emargement_statut(emargement) %}
+            <div class="flex items-center p-3 mb-8 border {{ statut == constant('App\\Enum\\EmargementStatut::ABSENT') ? 'border-red-500 bg-red-50' : 'border-orange-400 bg-orange-50' }}">
+                <span class="text-[10px] font-black uppercase tracking-widest {{ statut == constant('App\\Enum\\EmargementStatut::ABSENT') ? 'text-red-600' : 'text-orange-600' }}">
+                    État de la session : {{ statut.label }}
                 </span>
             </div>
 

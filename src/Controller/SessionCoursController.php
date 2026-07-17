@@ -4,7 +4,9 @@ namespace App\Controller;
 
 use App\Entity\SessionCours;
 use App\Form\SessionCoursType;
+use App\Repository\ClasseRepository;
 use App\Repository\SessionCoursRepository;
+use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -15,17 +17,16 @@ use Symfony\Component\Routing\Attribute\Route;
 class SessionCoursController extends AbstractController
 {
     #[Route('/', name: 'app_session_cours_index', methods: ['GET'])]
-  public function index(
-        Request $request, 
+    public function index(
+        Request $request,
         SessionCoursRepository $sessionCoursRepository,
-        \App\Repository\ClasseRepository $classeRepo,
-        \App\Repository\UserRepository $userRepo
+        ClasseRepository $classeRepository,
+        UserRepository $userRepository,
     ): Response {
-        
         $dateParam = $request->query->get('date');
         try {
             $selectedDate = $dateParam ? new \DateTimeImmutable($dateParam) : new \DateTimeImmutable('today');
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             $selectedDate = new \DateTimeImmutable('today');
         }
 
@@ -39,27 +40,18 @@ class SessionCoursController extends AbstractController
             $daysCarousel[] = $anchorDate->modify("+$i days");
         }
 
-        // Requête filtrée
         $sessions = $sessionCoursRepository->findSessionsByDate(
-            $selectedDate, 
-            $classeId ? (int)$classeId : null, 
-            $formateurId ? (int)$formateurId : null
+            $selectedDate,
+            $classeId ? (int) $classeId : null,
+            $formateurId ? (int) $formateurId : null
         );
-
-        $classes = $classeRepo->findAll();
-        $formateurs = $userRepo->createQueryBuilder('u')
-            ->andWhere('CAST_AS_TEXT(u.roles) LIKE :role')
-            ->andWhere('u.isArchived = false')
-            ->setParameter('role', '%"ROLE_FORMATEUR"%')
-            ->orderBy('u.nom', 'ASC')
-            ->getQuery()->getResult();
 
         return $this->render('session_cours/index.html.twig', [
             'sessions' => $sessions,
             'days_carousel' => $daysCarousel,
             'selected_date' => $selectedDate->format('Y-m-d'),
-            'classes' => $classes,
-            'formateurs' => $formateurs,
+            'classes' => $classeRepository->findAll(),
+            'formateurs' => $userRepository->findActiveFormateurs(),
             'current_classe' => $classeId,
             'current_formateur' => $formateurId,
         ]);
@@ -69,7 +61,7 @@ class SessionCoursController extends AbstractController
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
         $sessionCours = new SessionCours();
-        
+
         $form = $this->createForm(SessionCoursType::class, $sessionCours);
         $form->handleRequest($request);
 
@@ -110,13 +102,13 @@ class SessionCoursController extends AbstractController
     #[Route('/{id}', name: 'app_session_cours_delete', methods: ['POST'])]
     public function delete(Request $request, SessionCours $session, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$session->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $session->getId(), $request->request->get('_token'))) {
             $dateRedirect = $session->getDateCours()->format('Y-m-d');
-            
+
             $entityManager->remove($session);
             $entityManager->flush();
             $this->addFlash('success', 'La session a été supprimée définitivement.');
-            
+
             return $this->redirectToRoute('app_session_cours_index', ['date' => $dateRedirect], Response::HTTP_SEE_OTHER);
         }
 

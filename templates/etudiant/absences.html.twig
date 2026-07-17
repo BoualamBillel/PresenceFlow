@@ -31,9 +31,9 @@
 
     {% for a in absences %}
     {% set lastJustif = a.justificatifs|last %}
-    {% if lastJustif and lastJustif.statut == 'VALIDE' %}
+    {% if lastJustif and lastJustif.statut == constant('App\\Enum\\JustificatifStatut::VALIDE') %}
     {% set justifiees = justifiees + 1 %}
-    {% elseif not lastJustif or lastJustif.statut == 'REFUSE' %}
+    {% elseif not lastJustif or lastJustif.statut == constant('App\\Enum\\JustificatifStatut::REFUSE') %}
     {% set aJustifier = aJustifier + 1 %}
     {% endif %}
     {% endfor %}
@@ -74,15 +74,15 @@
 
             {# Badge en haut à droite #}
             <div class="absolute top-4 right-4">
-                {% if not dernierJustif or dernierJustif.statut == 'REFUSE' %}
+                {% if not dernierJustif or dernierJustif.statut == constant('App\\Enum\\JustificatifStatut::REFUSE') %}
                 <span class="bg-[#9B2226] text-white text-[9px] font-bold uppercase tracking-widest px-2 py-1">
-                    {% if dernierJustif and dernierJustif.statut == 'REFUSE' %}Refusé{% else %}À Justifier{% endif %}
+                    {% if dernierJustif and dernierJustif.statut == constant('App\\Enum\\JustificatifStatut::REFUSE') %}Refusé{% else %}À Justifier{% endif %}
                 </span>
-                {% elseif dernierJustif.statut == 'EN_ATTENTE' %}
+                {% elseif dernierJustif.statut == constant('App\\Enum\\JustificatifStatut::EN_ATTENTE') %}
                 <span class="bg-gray-300 text-gray-600 text-[9px] font-bold uppercase tracking-widest px-2 py-1">
                     En cours d'examen
                 </span>
-                {% elseif dernierJustif.statut == 'VALIDE' %}
+                {% elseif dernierJustif.statut == constant('App\\Enum\\JustificatifStatut::VALIDE') %}
                 <span class="bg-gray-300 text-gray-600 text-[9px] font-bold uppercase tracking-widest px-2 py-1">
                     Justifiée
                 </span>
@@ -98,7 +98,7 @@
             </div>
 
             {# Affichage du motif de refus si existant #}
-            {% if dernierJustif and dernierJustif.statut == 'REFUSE' and dernierJustif.motifRefus %}
+            {% if dernierJustif and dernierJustif.statut == constant('App\\Enum\\JustificatifStatut::REFUSE') and dernierJustif.motifRefus %}
             <div class="bg-gray-200 p-3 mt-3 mb-3 border-l-2 border-black">
                 <p class="text-[13px] text-black">
                     <span class="font-bold uppercase tracking-wider">Motif du refus :</span><br>
@@ -108,10 +108,10 @@
             {% endif %}
 
             {# Boutons d'action #}
-            {% if not dernierJustif or dernierJustif.statut == 'REFUSE' %}
+            {% if not dernierJustif or dernierJustif.statut == constant('App\\Enum\\JustificatifStatut::REFUSE') %}
             <a href="{{ path('app_etudiant_justifier', {'id': absence.id}) }}"
                 class="block w-full bg-black hover:bg-gray-800 text-white text-center font-bold py-3 text-[10px] uppercase tracking-widest mt-4 flex justify-center items-center">
-                {% if dernierJustif and dernierJustif.statut == 'REFUSE' %}
+                {% if dernierJustif and dernierJustif.statut == constant('App\\Enum\\JustificatifStatut::REFUSE') %}
                 Renvoyer un document
                 {% else %}
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

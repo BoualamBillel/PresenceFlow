@@ -1,6 +1,9 @@
 <?php
+
 namespace App\Controller;
 
+use App\Entity\User;
+use App\Security\RoleHomeRedirector;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -8,24 +11,14 @@ use Symfony\Component\Routing\Attribute\Route;
 class HomeController extends AbstractController
 {
     #[Route('/', name: 'app_home')]
-    public function index(): Response
+    public function index(RoleHomeRedirector $roleHomeRedirector): Response
     {
-        if (!$this->getUser()) {
+        $user = $this->getUser();
+
+        if (!$user instanceof User) {
             return $this->redirectToRoute('app_login');
         }
 
-        if ($this->isGranted('ROLE_ADMIN')) {
-            return $this->redirectToRoute('app_admin_dashboard');
-        }
-
-        if ($this->isGranted('ROLE_FORMATEUR')) {
-            return $this->redirectToRoute('app_formateur_dashboard');
-        }
-
-        if ($this->isGranted('ROLE_ETUDIANT')) {
-            return $this->redirectToRoute('app_etudiant_dashboard');
-        }
-
-        return $this->redirectToRoute('app_login');
+        return $this->redirectToRoute($roleHomeRedirector->dashboardRouteFor($user));
     }
 }

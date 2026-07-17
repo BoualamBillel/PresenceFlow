@@ -41,15 +41,15 @@
 
 		<div class="space-y-4 mt-2">
 			{% for session in sessions %}
-				{% set statut = session.getStatut() %}
+				{% set statut = session_statut(session) %}
 
 				<div class="border rounded-none p-4 transition-all relative
-						                            {{ statut == 'TERMINE' ? 'bg-gray-100/80 border-gray-300 opacity-75' : 'bg-white border-gray-400' }}">
+						                            {{ statut == constant('App\\Enum\\SessionStatut::TERMINE') ? 'bg-gray-100/80 border-gray-300 opacity-75' : 'bg-white border-gray-400' }}">
 
 					<div class="flex items-center space-x-3 mb-3">
-						{% if statut == 'EN_COURS' %}
+						{% if statut == constant('App\\Enum\\SessionStatut::EN_COURS') %}
 							<span class="bg-red-800 text-white text-[9px] font-black tracking-widest px-2 py-1 rounded-sm uppercase">EN COURS</span>
-						{% elseif statut == 'A_VENIR' %}
+						{% elseif statut == constant('App\\Enum\\SessionStatut::A_VENIR') %}
 							<span class="bg-gray-300 text-black text-[9px] font-black tracking-widest px-2 py-1 rounded-sm uppercase">À VENIR</span>
 						{% else %}
 							<span class="border border-gray-400 text-gray-600 text-[9px] font-black tracking-widest px-2 py-1 rounded-sm uppercase">TERMINÉ</span>
@@ -91,7 +91,7 @@
 						</div>
 					</div>
 
-					{% if statut == 'A_VENIR' %}
+					{% if statut == constant('App\\Enum\\SessionStatut::A_VENIR') %}
                         <div class="absolute bottom-4 right-4 flex space-x-2">
                             <a href="{{ path('app_session_cours_edit', {'id': session.id}) }}" class="border border-black p-1 text-black hover:bg-gray-50 transition-colors">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>

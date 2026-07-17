@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\User;
+use App\Enum\Role;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Doctrine\Persistence\ManagerRegistry;
@@ -89,7 +90,23 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     }
 
     /**
-     * Récupère tous les utilisateurs et exclut les administrateurs via PHP 
+     * Formateurs non archivés, triés par nom.
+     *
+     * @return User[]
+     */
+    public function findActiveFormateurs(): array
+    {
+        return $this->createQueryBuilder('u')
+            ->andWhere('CAST_AS_TEXT(u.roles) LIKE :role')
+            ->andWhere('u.isArchived = false')
+            ->setParameter('role', '%"' . Role::FORMATEUR->value . '"%')
+            ->orderBy('u.nom', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Récupère tous les utilisateurs et exclut les administrateurs via PHP
      * pour contourner le typage strict JSON de PostgreSQL.
      */
     public function findAllExceptAdmins(): array

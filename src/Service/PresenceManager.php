@@ -41,6 +41,21 @@ final class PresenceManager
     }
 
     /**
+     * Corrige manuellement le statut d'une fiche (action du formateur).
+     * Horodate la signature si l'élève est marqué présent ou en retard
+     * sans heure de signature connue.
+     */
+    public function corriger(Emargement $emargement, EmargementStatut $statut): void
+    {
+        $emargement->setStatut($statut);
+
+        if (!$emargement->getHeureSignature()
+            && ($statut === EmargementStatut::PRESENT || $statut === EmargementStatut::RETARD)) {
+            $emargement->setHeureSignature($this->clock->now());
+        }
+    }
+
+    /**
      * Résout le statut courant : une fiche EN_ATTENTE dont le cours est terminé
      * est considérée comme ABSENT (sans modification en base).
      */

@@ -9,6 +9,8 @@ use App\Entity\Justificatif;
 use App\Entity\Matiere;
 use App\Entity\SessionCours;
 use App\Entity\User;
+use App\Enum\EmargementStatut;
+use App\Enum\JustificatifStatut;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -210,22 +212,22 @@ class AppFixtures extends Fixture
             if ($isSessionPasse) {
                 $rand = mt_rand(1, 100);
                 if ($rand <= 80) { // 80% de présence
-                    $emargement->setStatut('PRESENT');
+                    $emargement->setStatut(EmargementStatut::PRESENT);
                     $emargement->setHeureSignature($debutSession);
                 } elseif ($rand <= 90) { // 10% de retard
-                    $emargement->setStatut('RETARD');
+                    $emargement->setStatut(EmargementStatut::RETARD);
                     $emargement->setHeureSignature($debutSession->modify('+' . mt_rand(16, 45) . ' minutes'));
                 } else { // 10% d'absence
-                    $emargement->setStatut('ABSENT');
+                    $emargement->setStatut(EmargementStatut::ABSENT);
                 }
             } else {
-                $emargement->setStatut('EN_ATTENTE');
+                $emargement->setStatut(EmargementStatut::EN_ATTENTE);
             }
-            
+
             $manager->persist($emargement);
 
             // Génération des justificatifs pour les absents et les retards
-            if (in_array($emargement->getStatut(), ['ABSENT', 'RETARD']) && mt_rand(1, 100) <= 60) {
+            if ($emargement->getStatut()->estJustifiable() && mt_rand(1, 100) <= 60) {
                 $justificatif = new Justificatif();
                 $justificatif->setEmargement($emargement);
                 $justificatif->setUrlFichier('dummy_certificat.pdf');
@@ -236,11 +238,11 @@ class AppFixtures extends Fixture
 
                 $jRand = mt_rand(1, 100);
                 if ($jRand <= 30) {
-                    $justificatif->setStatut('EN_ATTENTE');
+                    $justificatif->setStatut(JustificatifStatut::EN_ATTENTE);
                 } elseif ($jRand <= 80) {
-                    $justificatif->setStatut('VALIDE');
+                    $justificatif->setStatut(JustificatifStatut::VALIDE);
                 } else {
-                    $justificatif->setStatut('REFUSE');
+                    $justificatif->setStatut(JustificatifStatut::REFUSE);
                     $justificatif->setMotifRefus('Document non conforme. Merci de fournir un justificatif officiel.');
                 }
 

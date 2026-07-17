@@ -3,7 +3,9 @@
 namespace App\Repository;
 
 use App\Entity\SessionCours;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -42,5 +44,51 @@ class SessionCoursRepository extends ServiceEntityRepository
         return $qb->orderBy('s.heureDebut', 'ASC')
             ->getQuery()
             ->getResult();
+    }
+
+    /**
+     * Sessions d'un formateur pour une date donnée, triées par heure de début.
+     *
+     * @return SessionCours[]
+     */
+    public function findForFormateurOnDate(User $formateur, \DateTimeImmutable $date): array
+    {
+        return $this->createQueryBuilder('s')
+            ->andWhere('s.formateur = :formateur')
+            ->andWhere('s.dateCours = :date')
+            ->setParameter('formateur', $formateur)
+            ->setParameter('date', $date->format('Y-m-d'))
+            ->orderBy('s.heureDebut', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Sessions rattachées à l'une des classes données pour une date donnée.
+     *
+     * @param Collection<int, \App\Entity\Classe> $classes
+     *
+     * @return SessionCours[]
+     */
+    public function findForClassesOnDate(Collection $classes, \DateTimeImmutable $date): array
+    {
+        return $this->createQueryBuilder('s')
+            ->andWhere('s.classe IN (:classes)')
+            ->andWhere('s.dateCours = :date')
+            ->setParameter('classes', $classes)
+            ->setParameter('date', $date->format('Y-m-d'))
+            ->orderBy('s.heureDebut', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function countForDate(\DateTimeImmutable $date): int
+    {
+        return (int) $this->createQueryBuilder('s')
+            ->select('COUNT(s.id)')
+            ->andWhere('s.dateCours = :date')
+            ->setParameter('date', $date->format('Y-m-d'))
+            ->getQuery()
+            ->getSingleScalarResult();
     }
 }

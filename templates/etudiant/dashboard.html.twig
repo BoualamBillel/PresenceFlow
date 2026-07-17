@@ -28,9 +28,9 @@
     {# --- CALCUL DYNAMIQUE DES ABSENCES À JUSTIFIER --- #}
     {% set nbAbsencesAJustifier = 0 %}
     {% for emargement in emargements %}
-        {% if emargement.statut in ['ABSENT', 'RETARD'] %}
+        {% if emargement_statut(emargement).estJustifiable %}
             {% set dernierJustificatif = emargement.justificatifs|last %}
-            {% if not dernierJustificatif or dernierJustificatif.statut == 'REFUSE' %}
+            {% if not dernierJustificatif or dernierJustificatif.statut == constant('App\\Enum\\JustificatifStatut::REFUSE') %}
                 {% set nbAbsencesAJustifier = nbAbsencesAJustifier + 1 %}
             {% endif %}
         {% endif %}

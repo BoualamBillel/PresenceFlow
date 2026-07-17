@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Justificatif;
+use App\Enum\JustificatifStatut;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -16,28 +17,38 @@ class JustificatifRepository extends ServiceEntityRepository
         parent::__construct($registry, Justificatif::class);
     }
 
-    //    /**
-    //     * @return Justificatif[] Returns an array of Justificatif objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('j')
-    //            ->andWhere('j.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('j.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    public function countEnAttente(): int
+    {
+        return $this->count(['statut' => JustificatifStatut::EN_ATTENTE]);
+    }
 
-    //    public function findOneBySomeField($value): ?Justificatif
-    //    {
-    //        return $this->createQueryBuilder('j')
-    //            ->andWhere('j.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+    /**
+     * @return Justificatif[]
+     */
+    public function findEnAttente(): array
+    {
+        return $this->findBy(['statut' => JustificatifStatut::EN_ATTENTE]);
+    }
+
+    /**
+     * Justificatifs traités (validés ou refusés).
+     *
+     * @return Justificatif[]
+     */
+    public function findTraites(): array
+    {
+        return $this->createQueryBuilder('j')
+            ->andWhere('j.statut != :statut')
+            ->setParameter('statut', JustificatifStatut::EN_ATTENTE)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @return Justificatif[]
+     */
+    public function findLatest(int $limit): array
+    {
+        return $this->findBy([], ['dateSoumission' => 'DESC'], $limit);
+    }
 }

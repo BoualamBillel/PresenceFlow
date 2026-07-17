@@ -2,7 +2,10 @@
 
 namespace App\Repository;
 
+use App\Entity\Classe;
 use App\Entity\Emargement;
+use App\Entity\User;
+use App\Enum\EmargementStatut;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -17,9 +20,57 @@ class EmargementRepository extends ServiceEntityRepository
     }
 
     /**
-     * @return Emargement[] Returns an array of Emargement objects
+     * Persiste sans flush (à la charge de l'appelant).
      */
-    public function findForExport(?\App\Entity\Classe $classe, ?\App\Entity\User $etudiant): array
+    public function add(Emargement $emargement): void
+    {
+        $this->getEntityManager()->persist($emargement);
+    }
+
+    /**
+     * Émargements d'un étudiant, du plus récent au plus ancien.
+     *
+     * @return Emargement[]
+     */
+    public function findForEtudiant(User $etudiant): array
+    {
+        return $this->createQueryBuilder('e')
+            ->join('e.session', 's')
+            ->andWhere('e.etudiant = :etudiant')
+            ->setParameter('etudiant', $etudiant)
+            ->orderBy('s.dateCours', 'DESC')
+            ->addOrderBy('s.heureDebut', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function countAbsents(): int
+    {
+        return $this->count(['statut' => EmargementStatut::ABSENT]);
+    }
+
+    /**
+     * Dernières fiches ABSENT ne disposant d'aucun justificatif.
+     *
+     * @return Emargement[]
+     */
+    public function findRecentesAbsencesNonJustifiees(int $limit): array
+    {
+        return $this->createQueryBuilder('e')
+            ->leftJoin('e.justificatifs', 'j')
+            ->andWhere('e.statut = :statut')
+            ->andWhere('j.id IS NULL')
+            ->setParameter('statut', EmargementStatut::ABSENT)
+            ->orderBy('e.id', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @return Emargement[]
+     */
+    public function findForExport(?Classe $classe, ?User $etudiant): array
     {
         $qb = $this->createQueryBuilder('e')
             ->join('e.session', 's')
