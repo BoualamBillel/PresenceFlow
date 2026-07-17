@@ -60,6 +60,17 @@ class SecurityController extends AbstractController
 
             $this->addFlash('success', 'Votre mot de passe a été sécurisé. Bienvenue !');
             
+            $roles = $user->getRoles();
+            
+            if (in_array('ROLE_ADMIN', $roles, true)) {
+                return $this->redirectToRoute('app_admin_dashboard'); 
+            }
+            
+            if (in_array('ROLE_FORMATEUR', $roles, true)) {
+                return $this->redirectToRoute('app_formateur_dashboard'); 
+            }
+            
+            // Fallback logique : l'étudiant
             return $this->redirectToRoute('app_etudiant_dashboard'); 
         }
 
