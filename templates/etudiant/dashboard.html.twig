@@ -3,11 +3,12 @@
 {% block title %}Dashboard - PresenceFlow{% endblock %}
 
 {% block body %}
-<main class="flex-grow p-6 flex flex-col relative pb-32">
+{# lg:pb-36 : espace suffisant pour le bouton scan fixé en bas sur desktop aussi #}
+<main class="flex-grow p-6 lg:p-10 flex flex-col relative pb-32 lg:pb-36 lg:max-w-5xl lg:mx-auto lg:w-full">
 
     {# --- EN-TÊTE --- #}
     <div class="mb-6 flex flex-col items-center text-center sm:items-start sm:text-left">
-        <h2 class="text-2xl text-black">Bonjour, <span class="font-bold">{{ app.user.prenom|default('Etudiant') }}</span></h2>
+        <h2 class="text-2xl lg:text-3xl text-black">Bonjour, <span class="font-bold">{{ app.user.prenom|default('Etudiant') }}</span></h2>
         <div class="border-b-2 border-black inline-block mt-1">
             <p class="text-xs text-slate-500 font-bold tracking-wider uppercase px-1 pb-1">DWWM 2026</p>
         </div>
@@ -51,10 +52,13 @@
     </div>
     {% endif %}
 
+    {# --- COURS EN COURS + SUITE DU PROGRAMME (2 colonnes sur desktop) --- #}
+    <div class="lg:grid lg:grid-cols-2 lg:gap-10 lg:items-start">
+
     {# --- AFFICHAGE DU COURS EN COURS OU QUARTIER LIBRE --- #}
     {% if session %}
         {# L'étudiant a un cours actuellement #}
-        <div class="mb-10">
+        <div class="mb-10 lg:mb-0">
             <div class="flex justify-between items-center border-b border-gray-300 pb-2 mb-5">
                 <span class="text-xs font-bold text-slate-500 tracking-wider uppercase">En cours</span>
                 <span class="text-[11px] font-bold border border-black px-2 py-0.5">
@@ -83,8 +87,11 @@
             </div>
         </div>
     {% else %}
-        {# Aucun cours en ce moment #}
-        <div class="flex flex-col items-center justify-center mt-8 mb-10 text-center">
+        {# Aucun cours en ce moment.
+           lg:mt-0 : réaligne le bloc en haut de sa colonne (le mt-8 est un espacement mobile).
+           lg:col-span-2 : si aucune session à venir, le bloc occupe toute la largeur au lieu de
+           rester coincé dans la moitié gauche de l'écran. #}
+        <div class="flex flex-col items-center justify-center mt-8 mb-10 text-center lg:mt-0 lg:mb-0 {% if prochainesSessions is not defined or prochainesSessions|length == 0 %}lg:col-span-2{% endif %}">
             <div class="w-16 h-16 bg-gray-100 border border-gray-300 flex items-center justify-center mb-4">
                 <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -97,7 +104,7 @@
 
     {# --- SUITE DU PROGRAMME (Dynamisé) --- #}
     {% if prochainesSessions is defined and prochainesSessions|length > 0 %}
-        <div class="mb-10">
+        <div class="mb-10 lg:mb-0">
             <div class="border-b border-gray-300 pb-2 mb-4">
                 <span class="text-xs font-bold text-slate-500 tracking-wider uppercase">Suite du programme</span>
             </div>
@@ -118,8 +125,10 @@
         </div>
     {% endif %}
 
+    </div>{# fin de la grille 2 colonnes #}
+
     {# --- BOUTON SCAN FIXÉ EN BAS --- #}
-    <div class="fixed bottom-[72px] left-0 w-full px-6 bg-gradient-to-t from-white via-white to-transparent pt-6 pb-2 z-40 pointer-events-none">
+    <div class="fixed bottom-[72px] left-0 w-full px-6 bg-gradient-to-t from-white via-white to-transparent pt-6 pb-2 z-40 pointer-events-none lg:bottom-0 lg:left-1/2 lg:-translate-x-1/2 lg:max-w-5xl lg:px-10">
         <a href="{{ path('app_etudiant_scanner') }}" class="w-full bg-black hover:bg-gray-800 text-white font-bold py-4 text-xs tracking-widest flex items-center justify-center space-x-3 transition-colors pointer-events-auto shadow-lg">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm14 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path>

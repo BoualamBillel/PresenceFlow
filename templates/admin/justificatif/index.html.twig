@@ -3,13 +3,14 @@
 {% block title %}Justifications - Administration{% endblock %}
 
 {% block admin_content %}
-<div class="max-w-md mx-auto bg-white min-h-screen">
 
-    <div class="p-4">
-        <p class="text-sm text-gray-800 mb-4">Examinez et validez les motifs d'absence.</p>
+<div class="max-w-md mx-auto bg-white min-h-screen lg:max-w-none lg:mx-0 lg:bg-transparent lg:min-h-0">
+
+    <div class="p-4 lg:p-0 lg:max-w-6xl lg:mx-auto">
+        <p class="text-sm text-gray-800 mb-4 lg:mb-6">Examinez et validez les motifs d'absence.</p>
 
         {# Système d'onglets dynamique #}
-        <div class="flex justify-center mb-6">
+        <div class="flex justify-center mb-6 lg:mb-8">
             <div class="flex border border-black rounded bg-gray-200 overflow-hidden text-sm w-64 shadow-sm">
 
                 {# Onglet EN ATTENTE #}
@@ -28,11 +29,11 @@
         </div>
 
         {# Liste des justificatifs #}
-        <div class="space-y-4 pb-20">
+        <div class="space-y-4 pb-20 lg:pb-0 lg:space-y-0 lg:grid lg:grid-cols-2 xl:grid-cols-3 lg:gap-6">
             {% for justificatif in justificatifs %}
 
             {# Carte individuelle #}
-            <div class="border border-gray-300 rounded-sm p-4 bg-white shadow-sm">
+            <div class="border border-gray-300 rounded-sm p-4 bg-white shadow-sm lg:transition-shadow lg:hover:shadow-md">
 
                 {# Étudiant #}
                 <div class="text-center mb-3">
@@ -62,7 +63,7 @@
                         class="border border-gray-300 rounded-sm px-4 py-1.5 flex items-center space-x-2 text-sm text-gray-800 hover:bg-gray-50">
                         <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414A1 1 0 01.293.707V19a2 2 0 01-2 2z">
                             </path>
                         </svg>
                         <span>Voir la pièce jointe</span>
@@ -124,17 +125,14 @@
             <div id="modal-refus-{{ justificatif.id }}"
                 class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-opacity duration-300">
 
-                {# Le conteneur principal : arrondi, ombre portée profonde, fond légèrement grisé #}
                 <div
                     class="bg-[#f0f0f0] p-6 rounded-2xl w-full max-w-sm shadow-2xl border border-gray-200 transform transition-all scale-100">
 
-                    {# En-tête de la modale #}
                     <h3 class="font-black text-center text-gray-900 mb-1 text-lg tracking-tight">Refuser le justificatif
                     </h3>
                     <p class="text-sm text-center text-gray-500 mb-6 font-medium">Veuillez expliquer à l'étudiant la
                         raison de ce refus.</p>
 
-                    {# Le Formulaire #}
                     <form action="{{ path('admin_justificatif_refuser', {id: justificatif.id}) }}" method="POST">
                         <input type="hidden" name="_token" value="{{ csrf_token('refuser' ~ justificatif.id) }}">
 
@@ -142,21 +140,17 @@
                             <label class="block font-bold mb-2 text-xs text-gray-700 uppercase tracking-widest">Raison
                                 du refus</label>
 
-                            {# Le Textarea : Focus stylisé, ombre interne #}
                             <textarea name="motif_refus" required rows="3"
                                 class="w-full p-3 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-black focus:outline-none text-sm text-gray-800 shadow-inner transition-shadow resize-none"
                                 placeholder="Ex : Le document fourni est illisible..."></textarea>
                         </div>
 
-                        {# Les boutons d'action #}
                         <div class="flex gap-3">
-                            {# Bouton Annuler : Discret mais réactif #}
                             <button type="button" onclick="closeModal('modal-refus-{{ justificatif.id }}')"
                                 class="w-1/2 py-2.5 font-bold text-gray-600 bg-gray-200 rounded-xl text-sm text-center hover:bg-gray-300 hover:text-gray-900 transition-colors">
                                 Annuler
                             </button>
 
-                            {# Bouton Confirmer : Mise en avant, effet de soulèvement au survol #}
                             <button type="submit"
                                 class="w-1/2 bg-black text-white font-bold py-2.5 rounded-xl text-sm text-center shadow-md hover:bg-gray-800 hover:shadow-lg transition-all transform hover:-translate-y-0.5">
                                 Confirmer
@@ -167,7 +161,8 @@
             </div>
 
             {% else %}
-            <div class="p-8 text-center border border-gray-300 rounded bg-gray-50">
+            {# État vide #}
+            <div class="p-8 text-center border border-gray-300 rounded bg-gray-50 lg:col-span-full">
                 <p class="text-sm text-gray-500">Aucun justificatif en attente.</p>
             </div>
             {% endfor %}

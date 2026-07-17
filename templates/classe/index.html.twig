@@ -46,7 +46,7 @@
 
         <div class="space-y-4 mt-6">
             {% for classe in classes %}
-                <a href="{{ path('app_classe_edit', {'id': classe.id}) }}" class="block border border-black rounded-2xl p-4 hover:shadow-md transition-shadow bg-white group">
+                <a href="{{ path('app_classe_add_students', {'id': classe.id}) }}" class="block border border-black rounded-2xl p-4 hover:shadow-md transition-shadow bg-white group">
                     <div class="flex justify-between items-center">
                         
                         <div>

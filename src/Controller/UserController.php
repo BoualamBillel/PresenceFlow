@@ -16,24 +16,7 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/user')]
 class UserController extends AbstractController
 {
-    #[Route('/', name: 'app_user_index', methods: ['GET'])]
-    public function index(Request $request, UserRepository $userRepository): Response
-    {
-        $searchTerm = $request->query->get('q');
-        $filter = $request->query->get('filter', 'all');
-        $limit = $request->query->getInt('limit', 5);
-
-        $paginator = $userRepository->findBySearchAndFilter($searchTerm, $filter, $limit);
-
-        return $this->render('user/index.html.twig', [
-            'users' => $paginator,
-            'total_users' => count($paginator),
-            'current_filter' => $filter,
-            'search_term' => $searchTerm,
-            'limit' => $limit,
-        ]);
-    }
-
+    
     #[Route('/new', name: 'app_user_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager, UserManager $userManager): Response
     {

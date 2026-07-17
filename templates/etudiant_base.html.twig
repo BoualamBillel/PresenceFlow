@@ -7,10 +7,21 @@
     <script src="https://cdn.tailwindcss.com"></script>
     {% block stylesheets %}{% endblock %}
 </head>
-<body class="bg-white min-h-screen flex flex-col font-sans pb-20">
+<body class="bg-white min-h-screen flex flex-col font-sans pb-20 lg:pb-0">
 
-    <header class="bg-white px-6 py-4 flex justify-between items-center sticky top-0 z-10 border-b border-gray-100">
-        <div class="w-5"></div> <h1 class="text-sm font-black text-black">Vue d'ensemble</h1>
+    {% set current_route = app.request.attributes.get('_route') %}
+
+    <header class="bg-white px-6 lg:px-10 py-4 flex justify-between items-center sticky top-0 z-10 border-b border-gray-100">
+        <div class="w-5 lg:hidden"></div>
+        <h1 class="text-sm font-black text-black">Vue d'ensemble</h1>
+
+        {# --- NAVIGATION DESKTOP (le bottom nav prend le relais sur mobile) --- #}
+        <nav class="hidden lg:flex items-center space-x-8">
+            <a href="{{ path('app_etudiant_dashboard') }}" class="text-[11px] font-bold tracking-widest uppercase transition-colors {{ current_route == 'app_etudiant_dashboard' ? 'text-black border-b-2 border-black pb-1' : 'text-gray-400 hover:text-black' }}">Dashboard</a>
+            <a href="{{ path('app_etudiant_absences') }}" class="text-[11px] font-bold tracking-widest uppercase transition-colors {{ current_route == 'app_etudiant_absences' ? 'text-black border-b-2 border-black pb-1' : 'text-gray-400 hover:text-black' }}">Absences</a>
+            <a href="{{ path('app_etudiant_profil') }}" class="text-[11px] font-bold tracking-widest uppercase transition-colors {{ current_route == 'app_etudiant_profil' ? 'text-black border-b-2 border-black pb-1' : 'text-gray-400 hover:text-black' }}">Profil</a>
+        </nav>
+
         <a href="{{ path('app_logout') }}" class="text-slate-800 hover:text-red-600 transition-colors duration-200" title="Se déconnecter">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
@@ -20,8 +31,7 @@
 
     {% block body %}{% endblock %}
 
-    {% set current_route = app.request.attributes.get('_route') %}
-    <nav class="fixed bottom-0 w-full bg-white border-t border-gray-200 flex justify-around py-3 px-2 z-50">
+    <nav class="fixed bottom-0 w-full bg-white border-t border-gray-200 flex justify-around py-3 px-2 z-50 lg:hidden">
         <a href="{{ path('app_etudiant_dashboard') }}" class="flex flex-col items-center {{ current_route == 'app_etudiant_dashboard' ? 'text-black' : 'text-gray-400 hover:text-black' }} transition-colors">
             <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
             <span class="text-[9px] font-bold tracking-wider">DASHBOARD</span>
