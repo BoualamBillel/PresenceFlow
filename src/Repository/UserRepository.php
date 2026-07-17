@@ -42,7 +42,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             ->setParameter('adminRole', '%"ROLE_ADMIN"%');
 
         // Gestion du filtre par statut/rôle
-        if ($filter === 'archivés') {
+        if ($filter === 'archives') {
             $qb->andWhere('u.isArchived = true');
         } else {
             $qb->andWhere('u.isArchived = false');
@@ -86,5 +86,24 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         }
 
         return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * Récupère tous les utilisateurs et exclut les administrateurs via PHP 
+     * pour contourner le typage strict JSON de PostgreSQL.
+     */
+    public function findAllExceptAdmins(): array
+    {
+        $allUsers = $this->createQueryBuilder('u')
+            ->orderBy('u.nom', 'ASC')
+            ->addOrderBy('u.prenom', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        $filteredUsers = array_filter($allUsers, function($user) {
+            return !in_array('ROLE_ADMIN', $user->getRoles(), true);
+        });
+
+        return array_values($filteredUsers);
     }
 }
