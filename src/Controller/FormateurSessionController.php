@@ -42,26 +42,30 @@ class FormateurSessionController extends AbstractController
             return $this->render('formateur/session_show.html.twig', [
                 'session' => null,
                 'qr_code_uri' => null,
+                'qr_target_url' => null,
                 'time_left' => 0,
                 'is_startable' => false,
             ]);
         }
 
         $qrCodeUri = null;
+        $signerUrl = null;
         $timeLeft = 0;
 
         if ($this->qrCodeManager->isTokenValid($currentSession)) {
-            $qrCodeUri = $this->qrCodeManager->buildDataUri($this->generateUrl(
+            $signerUrl = $this->generateUrl(
                 'app_etudiant_signer',
                 ['token' => $currentSession->getQrCodeToken()],
                 UrlGeneratorInterface::ABSOLUTE_URL
-            ));
+            );
+            $qrCodeUri = $this->qrCodeManager->buildDataUri($signerUrl);
             $timeLeft = $currentSession->getQrTokenExpiresAt()->getTimestamp() - $this->clock->now()->getTimestamp();
         }
 
         return $this->render('formateur/session_show.html.twig', [
             'session' => $currentSession,
             'qr_code_uri' => $qrCodeUri,
+            'qr_target_url' => $signerUrl,
             'time_left' => max(0, $timeLeft),
             'is_startable' => $this->sessionManager->isStartable($currentSession),
         ]);
@@ -108,6 +112,7 @@ class FormateurSessionController extends AbstractController
 
         return $this->json([
             'qr_code_uri' => $this->qrCodeManager->buildDataUri($signerUrl),
+            'qr_target_url' => $signerUrl,
             'time_left' => max(0, $timeLeft),
         ]);
     }

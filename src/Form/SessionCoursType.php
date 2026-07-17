@@ -73,6 +73,7 @@ class SessionCoursType extends AbstractType
             ])
             ->add('toleranceRetard', IntegerType::class, [
                 'required' => false,
+                'empty_data' => '15',
                 'label' => 'TOLÉRANCE RETARD (MINUTES)',
                 'attr' => ['placeholder' => 'ex : 5'],
             ])

@@ -11,8 +11,8 @@
     <div class="w-full max-w-sm mx-auto mb-6 lg:max-w-none lg:mx-0">
         {% for label, messages in app.flashes %}
         {% for message in messages %}
-        <div class="p-4 text-xs font-bold text-white uppercase tracking-widest text-center shadow-lg
-                {{ label == 'success' ? 'bg-green-600' : (label == 'error' ? 'bg-red-600' : 'bg-blue-600') }}">
+        <div class="p-4 text-xs font-bold text-white uppercase tracking-widest text-center shadow-sm
+                {{ label == 'success' ? 'bg-[#16a34a]' : (label == 'error' ? 'bg-red-600' : 'bg-black') }}">
             {{ message }}
         </div>
         {% endfor %}
@@ -21,7 +21,7 @@
 
     <div class="mb-6 border-b-2 border-black pb-2">
         <h2 class="text-xl font-black text-black">Mes Absences</h2>
-        <p class="text-sm text-gray-800">Régulariser vos absences</p>
+        <p class="text-sm text-slate-600">Régulariser vos absences</p>
     </div>
 
     {# 1. Moteur de statistiques #}
@@ -40,15 +40,15 @@
 
     {# 2. Grille des compteurs #}
     <div class="grid grid-cols-3 gap-2 mb-6 lg:gap-4">
-        <div class="border border-gray-300 bg-white p-3 text-center">
+        <div class="border border-slate-300 rounded-lg bg-white p-3 text-center">
             <p class="text-[10px] font-bold text-black uppercase tracking-wider mb-1">Total</p>
             <p class="text-xl font-black text-black">{{ total }}</p>
         </div>
-        <div class="border border-gray-300 bg-white p-3 text-center">
+        <div class="border border-slate-300 rounded-lg bg-white p-3 text-center">
             <p class="text-[10px] font-bold text-black uppercase tracking-wider mb-1">Justifiées</p>
             <p class="text-xl font-black text-black">{{ justifiees }}</p>
         </div>
-        <div class="border border-red-400 bg-[#F4A5A5] p-3 text-center">
+        <div class="border border-red-400 rounded-lg bg-[#F4A5A5] p-3 text-center">
             <p class="text-[10px] font-bold text-black uppercase tracking-wider mb-1">À justifier</p>
             <p class="text-xl font-black text-black">{{ aJustifier }}</p>
         </div>
@@ -70,20 +70,20 @@
 
         {% set dernierJustif = absence.justificatifs|last %}
 
-        <div class="border border-gray-300 bg-white p-4 relative">
+        <div class="border border-slate-300 rounded-lg bg-white p-4 relative">
 
             {# Badge en haut à droite #}
             <div class="absolute top-4 right-4">
                 {% if not dernierJustif or dernierJustif.statut == constant('App\\Enum\\JustificatifStatut::REFUSE') %}
-                <span class="bg-[#9B2226] text-white text-[9px] font-bold uppercase tracking-widest px-2 py-1">
+                <span class="bg-red-800 text-white text-[9px] font-bold uppercase tracking-widest px-2 py-1">
                     {% if dernierJustif and dernierJustif.statut == constant('App\\Enum\\JustificatifStatut::REFUSE') %}Refusé{% else %}À Justifier{% endif %}
                 </span>
                 {% elseif dernierJustif.statut == constant('App\\Enum\\JustificatifStatut::EN_ATTENTE') %}
-                <span class="bg-gray-300 text-gray-600 text-[9px] font-bold uppercase tracking-widest px-2 py-1">
+                <span class="bg-slate-200 text-slate-600 text-[9px] font-bold uppercase tracking-widest px-2 py-1">
                     En cours d'examen
                 </span>
                 {% elseif dernierJustif.statut == constant('App\\Enum\\JustificatifStatut::VALIDE') %}
-                <span class="bg-gray-300 text-gray-600 text-[9px] font-bold uppercase tracking-widest px-2 py-1">
+                <span class="bg-slate-200 text-slate-600 text-[9px] font-bold uppercase tracking-widest px-2 py-1">
                     Justifiée
                 </span>
                 {% endif %}
@@ -99,7 +99,7 @@
 
             {# Affichage du motif de refus si existant #}
             {% if dernierJustif and dernierJustif.statut == constant('App\\Enum\\JustificatifStatut::REFUSE') and dernierJustif.motifRefus %}
-            <div class="bg-gray-200 p-3 mt-3 mb-3 border-l-2 border-black">
+            <div class="bg-slate-100 p-3 mt-3 mb-3 border-l-2 border-black">
                 <p class="text-[13px] text-black">
                     <span class="font-bold uppercase tracking-wider">Motif du refus :</span><br>
                     <span class="italic">"{{ dernierJustif.motifRefus }}"</span>
@@ -110,7 +110,7 @@
             {# Boutons d'action #}
             {% if not dernierJustif or dernierJustif.statut == constant('App\\Enum\\JustificatifStatut::REFUSE') %}
             <a href="{{ path('app_etudiant_justifier', {'id': absence.id}) }}"
-                class="block w-full bg-black hover:bg-gray-800 text-white text-center font-bold py-3 text-[10px] uppercase tracking-widest mt-4 flex justify-center items-center">
+                class="block w-full bg-black hover:bg-slate-800 text-white text-center font-bold py-3 text-[10px] uppercase tracking-widest mt-4 flex justify-center items-center">
                 {% if dernierJustif and dernierJustif.statut == constant('App\\Enum\\JustificatifStatut::REFUSE') %}
                 Renvoyer un document
                 {% else %}
@@ -126,7 +126,7 @@
 
         </div>
         {% else %}
-        <p class="text-xs text-gray-500 italic text-center py-8 lg:col-span-2">Aucune absence enregistrée.</p>
+        <p class="text-xs text-slate-500 italic text-center py-8 lg:col-span-2">Aucune absence enregistrée.</p>
         {% endfor %}
     </div>
 </main>

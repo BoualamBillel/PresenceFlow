@@ -50,9 +50,11 @@
         <div class="text-red-500 text-xs font-bold mt-1">{{ form_errors(form.emplacement) }}</div>
     </div>
 
-    {# Tolérance (Optionnelle - Masquée du visuel principal) #}
-    <div class="hidden">
-        {{ form_widget(form.toleranceRetard, {'value': 0}) }}
+{# Tolerance Retard #}
+    <div>
+        {{ form_label(form.toleranceRetard, null, {'label_attr': {'class': 'block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-2'}}) }}
+        {{ form_widget(form.toleranceRetard, {'attr': {'class': 'w-full p-3 bg-white border border-slate-300 rounded-lg focus:border-black focus:outline-none text-sm text-slate-900', 'placeholder': 'ex : 10'}}) }}
+        {{ form_errors(form.toleranceRetard) }}
     </div>
 
     <hr class="border-gray-200 mt-6 mb-4">

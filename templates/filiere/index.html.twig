@@ -4,70 +4,80 @@
 {% block header_title %}Filières{% endblock %}
 
 {% block admin_content %}
-    <div class="mb-6">
-        <h2 class="text-2xl font-black text-slate-900 tracking-tight">Filières</h2>
-        <p class="text-sm font-medium text-slate-500 border-b-2 border-slate-900 inline-block pb-1 mt-1">Gestion des programmes de formation</p>
-    </div>
-    
-    <a href="{{ path('app_filiere_new') }}" class="block w-full text-center bg-black hover:bg-slate-800 text-white font-bold py-4 rounded text-sm tracking-widest transition-colors uppercase shadow-md mb-6">
-        + Nouvelle Filière
-    </a>
+    <div class="space-y-6 lg:max-w-6xl lg:mx-auto">
 
-    <form method="get" action="{{ path('app_filiere_index') }}" class="relative mb-8">
-        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-            </svg>
+        <div>
+            <p class="text-sm font-medium text-slate-700">Gérez les programmes de formation de votre établissement.</p>
         </div>
-        <input type="text" 
-               name="q"
-               value="{{ app.request.query.get('q') }}"
-               class="w-full pl-10 pr-4 py-3 border border-slate-300 text-sm font-medium text-slate-900 placeholder-slate-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black rounded" 
-               placeholder="RECHERCHER UNE FILIÈRE...">
-    </form>
 
-    <div class="space-y-5">
-        {% for filiere in filieres %}
-            <div class="bg-white border-2 border-slate-300 p-5 relative group">
-                
-                <div class="flex justify-between items-start">
-                    <h3 class="text-xl font-black text-slate-900">{{ filiere.nom|upper }}</h3>
-                    {% if filiere.isArchived %}
-                        <span class="px-2 py-1 bg-slate-200 text-slate-700 text-xs font-bold border border-slate-400 rounded">Inactif</span>
-                    {% endif %}
-                </div>
-                
-                <p class="text-xs font-bold text-slate-600 mt-2 uppercase tracking-wide leading-relaxed">{{ filiere.description }}</p>
-                
-                <div class="mt-4 space-y-2">
-                    <div class="flex items-center text-xs font-bold text-slate-700">
-                        <svg class="w-4 h-4 mr-2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
-                        {{ filiere.niveau }}
+        <form method="get" action="{{ path('app_filiere_index') }}" class="space-y-4">
+
+            <div class="space-y-4 lg:space-y-0 lg:flex lg:gap-4">
+                <div class="relative lg:flex-1">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
                     </div>
-                    <div class="flex items-center text-xs font-bold text-slate-700">
-                        <svg class="w-4 h-4 mr-2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                        0 classes actives
+                    <input type="text" 
+                           name="q"
+                           value="{{ app.request.query.get('q') }}"
+                           class="w-full pl-10 pr-4 py-3 border border-slate-300 text-sm font-medium text-slate-900 placeholder-slate-500 focus:outline-none focus:border-black rounded-lg" 
+                           placeholder="RECHERCHER UNE FILIÈRE...">
+                </div>
+
+                <a href="{{ path('app_filiere_new') }}" class="block w-full text-center bg-black hover:bg-slate-800 text-white font-bold py-3.5 rounded-lg text-xs tracking-widest transition-colors uppercase flex items-center justify-center space-x-3 lg:w-auto lg:px-10 lg:shrink-0">
+                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg>
+                    <span>NOUVELLE FILIÈRE</span>
+                </a>
+            </div>
+
+        </form>
+
+        <div class="space-y-5 lg:space-y-0 lg:grid lg:grid-cols-2 xl:grid-cols-3 lg:gap-6">
+            {% for filiere in filieres %}
+                <div class="bg-white border border-slate-300 p-5 lg:transition-shadow lg:hover:shadow-md">
+                    
+                    <div class="flex justify-between items-start">
+                        <h3 class="text-xl font-black text-slate-900">{{ filiere.nom|upper }}</h3>
+                        {% if filiere.isArchived %}
+                            <span class="px-2 py-1 bg-slate-200 text-slate-700 text-xs font-bold border border-slate-400 rounded">Inactif</span>
+                        {% endif %}
+                    </div>
+                    
+                    <p class="text-xs font-bold text-slate-600 mt-2 uppercase tracking-wide leading-relaxed">{{ filiere.description }}</p>
+                    
+                    <div class="mt-4 space-y-2">
+                        <div class="flex items-center text-xs font-bold text-slate-700">
+                            <svg class="w-4 h-4 mr-2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+                            {{ filiere.niveau }}
+                        </div>
+                        <div class="flex items-center text-xs font-bold text-slate-700">
+                            <svg class="w-4 h-4 mr-2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                            0 classes actives
+                        </div>
+                    </div>
+
+                    <hr class="border-slate-200 my-4">
+
+                    <div class="flex justify-end space-x-2">
+                        <a href="{{ path('app_filiere_edit', {'id': filiere.id}) }}" class="p-1.5 border border-slate-300 rounded hover:bg-slate-100 text-slate-700 transition-colors hover:text-gray-700">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                        </a>
+                       <button type="button" 
+                                onclick="openDeleteModal('{{ filiere.nom|escape('js') }}', '{{ path('app_filiere_delete', {'id': filiere.id}) }}', '{{ csrf_token('delete' ~ filiere.id) }}')" 
+                                class="p-1.5 border border-slate-300 rounded text-slate-500 transition-all duration-200 hover:bg-red-50 hover:text-red-600 hover:border-red-300">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        </button>
                     </div>
                 </div>
-
-                <hr class="border-slate-200 my-4">
-
-                <div class="flex justify-end space-x-2">
-                    <a href="{{ path('app_filiere_edit', {'id': filiere.id}) }}" class="p-1.5 border border-slate-300 rounded hover:bg-slate-100 text-slate-700 transition-colors hover:text-gray-700">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
-                    </a>
-                   <button type="button" 
-                            onclick="openDeleteModal('{{ filiere.nom|escape('js') }}', '{{ path('app_filiere_delete', {'id': filiere.id}) }}', '{{ csrf_token('delete' ~ filiere.id) }}')" 
-                            class="p-1.5 border border-slate-300 rounded text-slate-500 transition-all duration-200 hover:bg-red-50 hover:text-red-600 hover:border-red-300">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                    </button>
+            {% else %}
+                <div class="text-center py-10 bg-white border border-dashed border-slate-300 rounded lg:col-span-full">
+                    <p class="text-slate-500 font-medium">Aucune filière n'a été créée pour le moment.</p>
                 </div>
-            </div>
-        {% else %}
-            <div class="text-center py-10 bg-white border border-dashed border-slate-300 rounded">
-                <p class="text-slate-500 font-medium">Aucune filière n'a été créée pour le moment.</p>
-            </div>
-        {% endfor %}
+            {% endfor %}
+        </div>
+
     </div>
 
     {# Delete Modale  #}
@@ -75,7 +85,7 @@
         
         <div class="fixed inset-0 w-screen h-screen bg-black/60 backdrop-blur-sm transition-opacity" onclick="closeDeleteModal()"></div>
         
-        <div class="relative bg-white rounded-3xl shadow-2xl w-full max-w-sm p-6 sm:p-8 transform transition-all border border-slate-200">
+        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 sm:p-8 transform transition-all border border-slate-200">
             
             <div class="text-center mb-8">
                 <div class="mx-auto flex items-center justify-center h-14 w-14 rounded-full bg-red-100 mb-5">

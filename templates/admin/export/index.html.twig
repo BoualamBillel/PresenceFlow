@@ -6,9 +6,8 @@
 {% block admin_content %}
     <div class="w-full max-w-xl mx-auto flex flex-col">
         
-        <div class="mb-6 sm:mb-8 text-center sm:text-left mt-2 sm:mt-8">
-            <h2 class="text-2xl font-black text-slate-900 mb-2">Générer un export</h2>
-            <p class="text-sm text-slate-500 leading-relaxed">Sélectionnez une classe <span class="font-bold underline text-slate-800">OU</span> un élève précis pour cibler l'extraction.</p>
+        <div class="mb-6 mt-2">
+            <p class="text-sm font-medium text-slate-700">Sélectionnez une classe ou un élève précis pour cibler l'extraction.</p>
         </div>
 
         <div class="bg-white border border-slate-200 rounded-2xl p-5 sm:p-8 shadow-sm">
@@ -23,7 +22,7 @@
                 
                 <div>
                     {{ form_label(form.classe, 'Exporter toute une classe', {'label_attr': {'class': 'block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-2'}}) }}
-                    {{ form_widget(form.classe, {'attr': {'class': 'w-full p-3 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-slate-900 focus:outline-none text-sm text-slate-900 transition-colors disabled:opacity-50 disabled:bg-slate-100 disabled:cursor-not-allowed'}}) }}
+                    {{ form_widget(form.classe, {'attr': {'class': 'w-full p-3 bg-white border border-slate-300 rounded-lg focus:border-black focus:outline-none text-sm text-slate-900 transition-colors disabled:opacity-50 disabled:bg-slate-100 disabled:cursor-not-allowed'}}) }}
                 </div>
 
                 <div class="relative flex py-2 items-center">
@@ -34,11 +33,11 @@
 
                 <div>
                     {{ form_label(form.etudiant, 'Exporter un élève spécifique', {'label_attr': {'class': 'block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-2'}}) }}
-                    {{ form_widget(form.etudiant, {'attr': {'class': 'w-full p-3 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-slate-900 focus:outline-none text-sm text-slate-900 transition-all disabled:opacity-50 disabled:bg-slate-100 disabled:cursor-not-allowed'}}) }}
+                    {{ form_widget(form.etudiant, {'attr': {'class': 'w-full p-3 bg-white border border-slate-300 rounded-lg focus:border-black focus:outline-none text-sm text-slate-900 transition-all disabled:opacity-50 disabled:bg-slate-100 disabled:cursor-not-allowed'}}) }}
                 </div>
 
                 <div class="pt-6 mt-2">
-                    <button type="submit" class="w-full bg-slate-900 text-white font-bold py-4 rounded-xl text-sm text-center shadow-lg hover:shadow-xl hover:bg-slate-800 transition-all flex items-center justify-center space-x-2">
+                    <button type="submit" class="w-full bg-black text-white font-bold py-3.5 rounded-lg text-xs tracking-widest uppercase text-center hover:bg-slate-800 transition-colors flex items-center justify-center space-x-3">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                         <span>Télécharger le CSV</span>
                     </button>

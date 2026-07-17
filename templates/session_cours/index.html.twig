@@ -6,45 +6,47 @@
 {% endblock %}
 
 {% block admin_content %}
-	<div class="space-y-5">
+	<div class="space-y-6 lg:max-w-6xl lg:mx-auto">
 
 		<div>
-			<h2 class="text-xl font-black text-black tracking-tight">Planning & Sessions</h2>
-			<p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Gestion des plannings et des sessions</p>
+			<p class="text-sm font-medium text-slate-700">Gérez les plannings et les sessions de votre établissement.</p>
 		</div>
 
 		{% set frDays = {'Mon': 'LUN', 'Tue': 'MAR', 'Wed': 'MER', 'Thu': 'JEU', 'Fri': 'VEN', 'Sat': 'SAM', 'Sun': 'DIM'} %}
         
-        <div class="flex overflow-x-auto space-x-3 pb-2 snap-x snap-mandatory [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div class="flex overflow-x-auto space-x-3 pb-2 lg:pb-0 snap-x snap-mandatory [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {% for day in days_carousel %}
                 {% set isCurrent = (day.format('Y-m-d') == selected_date) %}
                 {% set dayLabel = frDays[day.format('D')]|default(day.format('D')) %}
                 
                 <a href="{{ path('app_session_cours_index', app.request.query.all|merge({'date': day.format('Y-m-d')})) }}" 
-                   class="snap-center shrink-0 w-16 py-3 border rounded-xl flex flex-col items-center justify-center transition-all 
-                          {{ isCurrent ? 'bg-black border-black text-white shadow-md font-black' : 'bg-white border-gray-300 text-black hover:border-black' }}">
-                    <span class="text-[10px] uppercase tracking-wider {{ isCurrent ? 'text-gray-300' : 'text-gray-500' }}">{{ dayLabel }}</span>
+                   class="snap-center shrink-0 w-16 py-3 border rounded-lg flex flex-col items-center justify-center transition-all 
+                          {{ isCurrent ? 'bg-black border-black text-white shadow-md font-black' : 'bg-white border-slate-300 text-slate-900 hover:border-black' }}">
+                    <span class="text-[10px] uppercase tracking-wider {{ isCurrent ? 'text-gray-300' : 'text-slate-500' }}">{{ dayLabel }}</span>
                     <span class="text-lg font-bold mt-0.5">{{ day.format('d') }}</span>
                 </a>
             {% endfor %}
         </div>
 
-        <a href="{{ path('app_session_cours_new') }}" class="block w-full text-center bg-black hover:bg-slate-800 text-white font-bold py-3.5 rounded-none text-xs tracking-widest transition-colors uppercase">
-            + NOUVELLE SESSION
-        </a>
+        <div class="space-y-4 lg:space-y-0 lg:flex lg:gap-4">
+            <a href="{{ path('app_session_cours_new') }}" class="block w-full text-center bg-black hover:bg-slate-800 text-white font-bold py-3.5 rounded-lg text-xs tracking-widest transition-colors uppercase flex items-center justify-center space-x-3 lg:w-auto lg:px-10 lg:shrink-0">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg>
+                <span>NOUVELLE SESSION</span>
+            </a>
 
-        {% set isFilterActive = current_classe or current_formateur %}
-        <button type="button" onclick="openFilterModal()" class="w-full border {{ isFilterActive ? 'border-black bg-black text-white' : 'border-gray-300 bg-white text-black' }} py-3 px-4 text-xs font-bold uppercase tracking-wider flex items-center justify-center space-x-2 transition-colors">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
-            <span>{{ isFilterActive ? 'Filtres actifs (Cliquez pour modifier)' : 'Filtrer par Classe ou Formateur' }}</span>
-        </button>
+            {% set isFilterActive = current_classe or current_formateur %}
+            <button type="button" onclick="openFilterModal()" class="w-full border rounded-lg {{ isFilterActive ? 'border-black bg-black text-white' : 'border-slate-300 bg-white text-slate-900' }} py-3 px-4 text-xs font-bold uppercase tracking-wider flex items-center justify-center space-x-2 transition-colors lg:w-auto lg:px-6 lg:shrink-0">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
+                <span>{{ isFilterActive ? 'Filtres actifs (Cliquez pour modifier)' : 'Filtrer par Classe ou Formateur' }}</span>
+            </button>
+        </div>
 
-		<div class="space-y-4 mt-2">
+		<div class="space-y-4 mt-2 lg:mt-0 lg:space-y-0 lg:grid lg:grid-cols-2 xl:grid-cols-3 lg:gap-6">
 			{% for session in sessions %}
 				{% set statut = session_statut(session) %}
 
-				<div class="border rounded-none p-4 transition-all relative
-						                            {{ statut == constant('App\\Enum\\SessionStatut::TERMINE') ? 'bg-gray-100/80 border-gray-300 opacity-75' : 'bg-white border-gray-400' }}">
+				<div class="border rounded-lg p-4 transition-all relative lg:hover:shadow-md
+					                            {{ statut == constant('App\\Enum\\SessionStatut::TERMINE') ? 'bg-gray-100/80 border-slate-300 opacity-75' : 'bg-white border-slate-300' }}">
 
 					<div class="flex items-center space-x-3 mb-3">
 						{% if statut == constant('App\\Enum\\SessionStatut::EN_COURS') %}
@@ -52,10 +54,10 @@
 						{% elseif statut == constant('App\\Enum\\SessionStatut::A_VENIR') %}
 							<span class="bg-gray-300 text-black text-[9px] font-black tracking-widest px-2 py-1 rounded-sm uppercase">À VENIR</span>
 						{% else %}
-							<span class="border border-gray-400 text-gray-600 text-[9px] font-black tracking-widest px-2 py-1 rounded-sm uppercase">TERMINÉ</span>
+							<span class="border border-slate-400 text-slate-600 text-[9px] font-black tracking-widest px-2 py-1 rounded-sm uppercase">TERMINÉ</span>
 						{% endif %}
 
-						<span class="text-sm font-black text-black">
+						<span class="text-sm font-black text-slate-900">
 							{{ session.heureDebut|date('H:i') }}
 							-
 							{{ session.heureFin|date('H:i') }}
@@ -63,26 +65,26 @@
 					</div>
 
 					<div class="space-y-1.5">
-						<h4 class="text-sm font-black text-black leading-snug tracking-tight">
+						<h4 class="text-sm font-black text-slate-900 leading-snug tracking-tight">
 							{{ session.matiere.nom }}
 						</h4>
 
-						<div class="text-xs text-gray-700 font-medium space-y-0.5">
+						<div class="text-xs text-slate-600 font-medium space-y-0.5">
 							<div class="flex items-center space-x-2">
-								<svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+								<svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
 									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
 								</svg>
 								<span>{{ session.classe.nom }}</span>
 							</div>
 							<div class="flex items-center space-x-2">
-								<svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+								<svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
 									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
 								</svg>
 								<span>{{ session.formateur.prenom }}
 									{{ session.formateur.nom }}</span>
 							</div>
 							<div class="flex items-center space-x-2">
-								<svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+								<svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
 									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
 									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
 								</svg>
@@ -93,25 +95,22 @@
 
 					{% if statut == constant('App\\Enum\\SessionStatut::A_VENIR') %}
                         <div class="absolute bottom-4 right-4 flex space-x-2">
-                            <a href="{{ path('app_session_cours_edit', {'id': session.id}) }}" class="border border-black p-1 text-black hover:bg-gray-50 transition-colors">
+                            <a href="{{ path('app_session_cours_edit', {'id': session.id}) }}" class="border border-slate-300 rounded p-1.5 text-slate-600 hover:bg-slate-100 transition-colors block">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                             </a>
                             
-                            <form method="post" action="{{ path('app_session_cours_delete', {'id': session.id}) }}" onsubmit="return confirm('Supprimer ce créneau ?');" class="m-0 p-0">
-                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ session.id) }}">
-                                <button type="button" 
-                                    onclick="openDeleteModal('{{ session.matiere.nom|escape('js') }}', '{{ session.heureDebut|date('H:i') }}', '{{ path('app_session_cours_delete', {'id': session.id}) }}', '{{ csrf_token('delete' ~ session.id) }}')" 
-                                    class="border border-black p-1 text-black hover:bg-red-50 hover:text-red-600 hover:border-red-600 transition-colors block">
+                            <button type="button" 
+                                onclick="openDeleteModal('{{ session.matiere.nom|escape('js') }}', '{{ session.heureDebut|date('H:i') }}', '{{ path('app_session_cours_delete', {'id': session.id}) }}', '{{ csrf_token('delete' ~ session.id) }}')" 
+                                class="border border-slate-300 rounded p-1.5 text-slate-500 hover:bg-red-50 hover:text-red-600 hover:border-red-300 transition-colors block">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                             </button>
-                            </form>
                         </div>
                     {% endif %}
 
 				</div>
 			{% else %}
-				<div class="p-8 text-center border border-dashed border-gray-300 rounded-xl bg-gray-50">
-					<p class="text-sm font-medium text-gray-500">Aucun cours de planifié pour cette journée.</p>
+				<div class="p-8 text-center border border-dashed border-slate-300 rounded-lg bg-gray-50 lg:col-span-full">
+					<p class="text-sm font-medium text-slate-500">Aucun cours de planifié pour cette journée.</p>
 				</div>
 			{% endfor %}
 		</div>
@@ -119,11 +118,11 @@
 	</div>
 
 	<div id="filter-modal" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 transition-opacity opacity-0">
-        <div class="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl transform scale-95 transition-transform duration-200" id="filter-modal-content">
+        <div class="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl transform scale-95 transition-transform duration-200" id="filter-modal-content">
             
             <div class="mb-6 flex justify-between items-center">
-                <h3 class="text-xl font-black text-black">Filtrer les sessions</h3>
-                <button type="button" onclick="closeFilterModal()" class="text-gray-400 hover:text-black">
+                <h3 class="text-xl font-black text-slate-900">Filtrer les sessions</h3>
+                <button type="button" onclick="closeFilterModal()" class="text-slate-400 hover:text-black">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
             </div>
@@ -132,8 +131,8 @@
                 <input type="hidden" name="date" value="{{ selected_date }}">
 
                 <div>
-                    <label class="block text-[10px] font-bold text-black uppercase tracking-wider mb-1">Classe</label>
-                    <select name="classe" class="appearance-none w-full px-3 py-3 border border-gray-400 bg-white text-black text-sm rounded-none focus:outline-none focus:border-black">
+                    <label class="block text-[10px] font-bold text-slate-900 uppercase tracking-wider mb-1">Classe</label>
+                    <select name="classe" class="appearance-none w-full px-3 py-3 border border-slate-300 bg-white text-slate-900 text-sm rounded-lg focus:outline-none focus:border-black">
                         <option value="">Toutes les classes</option>
                         {% for classe in classes %}
                             <option value="{{ classe.id }}" {{ current_classe == classe.id ? 'selected' : '' }}>{{ classe.nom }}</option>
@@ -142,8 +141,8 @@
                 </div>
 
                 <div>
-                    <label class="block text-[10px] font-bold text-black uppercase tracking-wider mb-1">Formateur</label>
-                    <select name="formateur" class="appearance-none w-full px-3 py-3 border border-gray-400 bg-white text-black text-sm rounded-none focus:outline-none focus:border-black">
+                    <label class="block text-[10px] font-bold text-slate-900 uppercase tracking-wider mb-1">Formateur</label>
+                    <select name="formateur" class="appearance-none w-full px-3 py-3 border border-slate-300 bg-white text-slate-900 text-sm rounded-lg focus:outline-none focus:border-black">
                         <option value="">Tous les formateurs</option>
                         {% for formateur in formateurs %}
                             <option value="{{ formateur.id }}" {{ current_formateur == formateur.id ? 'selected' : '' }}>{{ formateur.prenom }} {{ formateur.nom }}</option>
@@ -152,7 +151,7 @@
                 </div>
 
                 <div class="pt-4 flex space-x-3">
-                    <a href="{{ path('app_session_cours_index', {'date': selected_date}) }}" class="flex-1 bg-gray-100 hover:bg-gray-200 text-black text-center font-bold py-3.5 rounded-xl transition-colors text-xs uppercase tracking-wider">
+                    <a href="{{ path('app_session_cours_index', {'date': selected_date}) }}" class="flex-1 bg-gray-100 hover:bg-gray-200 text-slate-900 text-center font-bold py-3.5 rounded-xl transition-colors text-xs uppercase tracking-wider">
                         Réinitialiser
                     </a>
                     <button type="submit" class="flex-1 bg-black hover:bg-slate-800 text-white font-bold py-3.5 rounded-xl transition-colors text-xs uppercase tracking-wider">
@@ -188,22 +187,22 @@
     </script>
 
     <div id="delete-session-modal" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 transition-opacity opacity-0">
-        <div class="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl transform scale-95 transition-transform duration-200" id="delete-session-modal-content">
+        <div class="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl transform scale-95 transition-transform duration-200" id="delete-session-modal-content">
             
             <div class="w-14 h-14 rounded-full bg-red-100 text-red-600 flex items-center justify-center mx-auto mb-5 border-4 border-red-50">
                 <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
             </div>
 
-            <h3 class="text-xl font-black text-center text-black mb-2">Supprimer la session ?</h3>
-            <p class="text-sm text-gray-500 text-center mb-8">
-                Vous allez supprimer définitivement le cours de <br><strong id="modal-session-name" class="text-black"></strong> à <strong id="modal-session-time" class="text-black"></strong>. Cette action est irréversible.
+            <h3 class="text-xl font-black text-center text-slate-900 mb-2">Supprimer la session ?</h3>
+            <p class="text-sm text-slate-500 text-center mb-8">
+                Vous allez supprimer définitivement le cours de <br><strong id="modal-session-name" class="text-slate-900"></strong> à <strong id="modal-session-time" class="text-slate-900"></strong>. Cette action est irréversible.
             </p>
 
             <form id="delete-session-form" method="post" action="">
                 <input type="hidden" name="_token" id="modal-delete-csrf" value="">
                 
                 <div class="flex space-x-3">
-                    <button type="button" onclick="closeDeleteModal()" class="flex-1 bg-gray-100 hover:bg-gray-200 text-black font-bold py-3.5 rounded-xl transition-colors text-xs uppercase tracking-wider">
+                    <button type="button" onclick="closeDeleteModal()" class="flex-1 bg-gray-100 hover:bg-gray-200 text-slate-900 font-bold py-3.5 rounded-xl transition-colors text-xs uppercase tracking-wider">
                         Annuler
                     </button>
                     <button type="submit" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-3.5 rounded-xl transition-colors text-xs uppercase tracking-wider">

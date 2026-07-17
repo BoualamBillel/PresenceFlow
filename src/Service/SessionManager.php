@@ -77,12 +77,23 @@ final class SessionManager
      * Une session est affichable comme lançable 15 minutes avant son début.
      */
     public function isStartable(SessionCours $session): bool
-    {
-        $now = $this->clock->now();
-        $debutAutorise = $session->getHeureDebut()->modify('-' . self::START_ADVANCE_MINUTES . ' minutes');
+{
+    $now = $this->clock->now();
 
-        return $now->format('H:i:s') >= $debutAutorise->format('H:i:s');
-    }
+    $debut = $session->getDateCours()->setTime(
+        (int) $session->getHeureDebut()->format('H'),
+        (int) $session->getHeureDebut()->format('i'),
+        (int) $session->getHeureDebut()->format('s')
+    );
+
+    $fin = $session->getDateCours()->setTime(
+        (int) $session->getHeureFin()->format('H'),
+        (int) $session->getHeureFin()->format('i'),
+        (int) $session->getHeureFin()->format('s')
+    );
+
+    return $now >= $debut->modify('-15 minutes') && $now <= $fin;
+}
 
     /**
      * Lance la session : génère le jeton QR et initialise les fiches d'émargement
