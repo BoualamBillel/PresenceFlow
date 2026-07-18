@@ -1,0 +1,275 @@
+{% extends 'formateur_base.html.twig' %}
+
+{% block title %}
+	{{ session.matiere.nom }}
+	- Mon Planning
+{% endblock %}
+
+{% block page_title %}Planning
+{% endblock %}
+
+{% block body %}
+	{% set statut = session_statut(session) %}
+	{% set emargements = session.emargements|sort((a, b) => (a.etudiant.nom ~ a.etudiant.prenom) <=> (b.etudiant.nom ~ b.etudiant.prenom)) %}
+	{% set total = emargements|length %}
+	{% set presents = emargements|filter(e => e.statut == constant('App\\Enum\\EmargementStatut::PRESENT'))|length %}
+	{% set retards = emargements|filter(e => e.statut == constant('App\\Enum\\EmargementStatut::RETARD'))|length %}
+	{% set absents = emargements|filter(e => e.statut == constant('App\\Enum\\EmargementStatut::ABSENT'))|length %}
+	{% set taux = total > 0 ? (((presents + retards) / total) * 100)|round : 0 %}
+	{% set frDaysFull = {'Mon': 'Lundi', 'Tue': 'Mardi', 'Wed': 'Mercredi', 'Thu': 'Jeudi', 'Fri': 'Vendredi', 'Sat': 'Samedi', 'Sun': 'Dimanche'} %}
+	{% set frMonths = {'01': 'Janvier', '02': 'Février', '03': 'Mars', '04': 'Avril', '05': 'Mai', '06': 'Juin', '07': 'Juillet', '08': 'Août', '09': 'Septembre', '10': 'Octobre', '11': 'Novembre', '12': 'Décembre'} %}
+
+	<main class="flex-grow p-4 lg:p-10 lg:max-w-5xl lg:mx-auto lg:w-full">
+		<div class="space-y-6">
+
+			<a href="{{ path('app_formateur_planning', {'date': session.dateCours|date('Y-m-d')}) }}" class="inline-flex items-center gap-2 text-[11px] font-bold text-slate-500 hover:text-black uppercase tracking-wider transition-colors">
+				<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+				</svg>
+				Retour au planning
+			</a>
+
+			<div>
+				<div class="mb-3">
+					{% if statut == constant('App\\Enum\\SessionStatut::EN_COURS') %}
+						<span class="bg-red-600 text-white text-[9px] font-black tracking-widest px-2.5 py-1 rounded-full uppercase">En cours</span>
+					{% elseif statut == constant('App\\Enum\\SessionStatut::A_VENIR') %}
+						<span class="bg-black text-white text-[9px] font-black tracking-widest px-2.5 py-1 rounded-full uppercase">À venir</span>
+					{% else %}
+						<span class="border border-black text-black text-[9px] font-black tracking-widest px-2.5 py-1 rounded-full uppercase">Terminé</span>
+					{% endif %}
+				</div>
+				<h1 class="text-xl font-black text-black tracking-tight mb-1">{{ session.matiere.nom }}</h1>
+				<p class="text-sm text-slate-600 font-medium">
+					{{ session.classe.nom }}
+					—
+					{{ frDaysFull[session.dateCours|date('D')] }}
+					{{ session.dateCours|date('d') }}
+					{{ frMonths[session.dateCours|date('m')] }}
+					—
+					{{ session.heureDebut|date('H:i') }}
+					-
+					{{ session.heureFin|date('H:i') }}
+				</p>
+				<p class="text-sm text-slate-600 font-medium flex items-center gap-1.5 mt-0.5">
+					<svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+					</svg>
+					{{ session.emplacement }}
+				</p>
+			</div>
+
+			<div class="space-y-6 lg:space-y-0 lg:grid lg:grid-cols-2 lg:gap-10 lg:items-start">
+
+				<div class="space-y-4">
+					{% if statut == constant('App\\Enum\\SessionStatut::EN_COURS') %}
+						<div class="border-2 border-black bg-black text-white rounded-lg p-5 flex flex-col sm:flex-row sm:items-center gap-4">
+							<div class="flex-1">
+								<p class="text-sm font-black uppercase tracking-widest mb-1">Session en cours</p>
+								<p class="text-xs text-gray-300">Le pointage se gère en direct depuis le tableau de bord.</p>
+							</div>
+							<a href="{{ path('app_formateur_dashboard') }}" class="bg-white text-black text-center text-xs font-black uppercase tracking-widest px-5 py-3 rounded-lg shrink-0">Ouvrir le dashboard</a>
+						</div>
+					{% endif %}
+
+					{% if total > 0 %}
+						<div class="border-2 border-black rounded-lg p-5">
+							<div class="flex items-start justify-between gap-4">
+								<div>
+									<p class="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Taux de présence</p>
+									<p class="text-xs text-slate-500">{{ session.qrCodeToken is null ? 'Émargement finalisé et validé.' : 'Signatures en cours…' }}</p>
+								</div>
+								<p class="text-3xl font-black text-black leading-none">{{ taux }}%</p>
+							</div>
+							<div class="mt-4 flex flex-wrap items-center gap-2">
+								<span class="bg-slate-100 text-slate-700 text-[10px] font-bold px-2 py-1 rounded">{{ presents + retards }}
+									/
+									{{ total }}
+									présents</span>
+								<span class="text-[10px] font-bold text-slate-400">{{ retards }}
+									retard(s) ·
+									{{ absents }}
+									absent(s)</span>
+							</div>
+						</div>
+					{% else %}
+						<div class="border border-dashed border-slate-300 rounded-lg p-5 bg-gray-50">
+							<p class="text-sm font-medium text-slate-500">La liste d'émargement sera générée automatiquement au lancement de la session.</p>
+						</div>
+					{% endif %}
+				</div>
+
+				{% if total > 0 %}
+					<div>
+						<div class="inline-block mb-4">
+							<h2 class="text-base font-black text-black tracking-tight mb-1">Liste d'émargement</h2>
+							<div class="h-0.5 w-full bg-black"></div>
+						</div>
+
+						<div class="relative mb-4">
+							<svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+							</svg>
+							<input type="text" id="emargement-search" placeholder="Rechercher un étudiant..." class="w-full pl-9 pr-3 py-3 border border-slate-300 bg-white text-black text-sm rounded-lg focus:outline-none focus:border-black">
+						</div>
+
+						<div class="space-y-3 lg:max-h-[32rem] lg:overflow-y-auto lg:pr-1">
+							{% for emargement in emargements %}
+								{% set eStatut = emargement.statut %}
+								{% set currentLabel = eStatut == constant('App\\Enum\\EmargementStatut::PRESENT') ? 'Présent' : (eStatut == constant('App\\Enum\\EmargementStatut::RETARD') ? 'En retard' : (eStatut == constant('App\\Enum\\EmargementStatut::ABSENT') ? 'Absent' : 'En attente')) %}
+
+								<div class="js-emargement-row flex items-center gap-3 border border-slate-200 rounded-lg p-3 bg-white" data-name="{{ (emargement.etudiant.prenom ~ ' ' ~ emargement.etudiant.nom)|lower }}">
+									<div class="w-10 h-10 rounded-full bg-blue-100 text-blue-800 flex items-center justify-center text-xs font-black shrink-0">
+										{{ (emargement.etudiant.prenom|first ~ emargement.etudiant.nom|first)|upper }}
+									</div>
+									<div class="flex-1 min-w-0">
+										<p class="text-sm font-bold text-slate-900 truncate">{{ emargement.etudiant.prenom }}
+											{{ emargement.etudiant.nom }}</p>
+										<p class="text-[11px] font-black tracking-wider uppercase {{ eStatut == constant('App\\Enum\\EmargementStatut::PRESENT') ? 'text-green-600' : (eStatut == constant('App\\Enum\\EmargementStatut::RETARD') ? 'text-orange-500' : (eStatut == constant('App\\Enum\\EmargementStatut::ABSENT') ? 'text-red-600' : 'text-slate-400')) }}">
+											{% if eStatut == constant('App\\Enum\\EmargementStatut::RETARD') and emargement.heureSignature is not null %}
+												{% set minutesRetard = (((emargement.heureSignature|date('U') - session.heureDebut|date('U')) / 60)|round) - session.toleranceRetard %}
+												Retard
+												{% if minutesRetard > 0 %}
+													({{ minutesRetard }}
+													min)
+												{% endif %}
+											{% else %}
+												{{ currentLabel }}
+											{% endif %}
+										</p>
+									</div>
+									<button type="button" onclick="openStatutModal(this)" class="shrink-0 border border-slate-300 rounded p-1.5 text-slate-500 hover:border-black hover:text-black transition-colors" data-action="{{ path('app_formateur_emargement_modifier', {'id': emargement.id}) }}" data-csrf="{{ csrf_token('modifier' ~ emargement.id) }}" data-name="{{ emargement.etudiant.prenom ~ ' ' ~ emargement.etudiant.nom }}" data-initials="{{ (emargement.etudiant.prenom|first ~ emargement.etudiant.nom|first)|upper }}" data-current="{{ emargement.statut.value }}" data-current-label="{{ currentLabel }}">
+										<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+										</svg>
+									</button>
+								</div>
+							{% endfor %}
+						</div>
+					</div>
+				{% endif %}
+
+			</div>
+		</div>
+	</main>
+
+	<div id="statut-modal" class="fixed inset-0 z-[60] hidden bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center transition-opacity opacity-0">
+		<div class="bg-white rounded-t-2xl sm:rounded-2xl p-6 sm:p-8 w-full max-w-md shadow-2xl transform translate-y-full sm:translate-y-0 sm:scale-95 transition-transform duration-300 relative" id="statut-modal-content">
+			<div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-6 sm:hidden"></div>
+
+			<button type="button" onclick="closeStatutModal()" class="absolute top-6 right-6 text-slate-400 hover:text-black transition-colors">
+				<svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+				</svg>
+			</button>
+
+			<h3 class="text-xl font-black text-black mb-6 border-b-4 border-black inline-block pb-1">Modifier le statut</h3>
+
+			<div class="border border-slate-200 rounded-lg p-4 mb-6 bg-white flex items-center gap-4">
+				<div id="modal-avatar" class="w-10 h-10 rounded-full bg-blue-100 text-blue-800 text-[11px] font-black flex items-center justify-center shrink-0"></div>
+				<div>
+					<p id="modal-student-name" class="font-bold text-black text-base leading-none"></p>
+					<p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mt-1.5">Actuellement :
+						<span id="modal-current-statut" class="text-black"></span>
+					</p>
+				</div>
+				<div id="modal-color-indicator" class="w-3 h-3 rounded-full border border-black ml-auto bg-gray-200"></div>
+			</div>
+
+			<form id="statut-form" method="post" action="">
+				<input type="hidden" name="_token" id="modal-csrf" value="">
+				<input type="hidden" name="_redirect" value="{{ path('app_formateur_planning_show', {'id': session.id}) }}">
+
+				<div class="space-y-3 mb-8">
+					{% set choices = [
+                        {enum: constant('App\\Enum\\EmargementStatut::PRESENT'), label: 'Présent', text: 'text-green-500', dot: 'bg-green-500', border: 'peer-checked:border-green-500'},
+                        {enum: constant('App\\Enum\\EmargementStatut::RETARD'), label: 'En retard', text: 'text-orange-400', dot: 'bg-orange-400', border: 'peer-checked:border-orange-500'},
+                        {enum: constant('App\\Enum\\EmargementStatut::ABSENT'), label: 'Absent', text: 'text-red-500', dot: 'bg-red-500', border: 'peer-checked:border-red-500'}
+                    ] %}
+					{% for choice in choices %}
+						<label class="block cursor-pointer relative">
+							<input type="radio" name="statut" value="{{ choice.enum.value }}" class="peer sr-only">
+							<div class="border border-slate-200 rounded-lg p-4 flex items-center justify-center transition-colors {{ choice.border }}">
+								<span class="absolute left-4 w-3 h-3 rounded-full border border-black {{ choice.dot }}"></span>
+								<span class="text-xs font-bold uppercase tracking-widest {{ choice.text }}">{{ choice.label }}</span>
+							</div>
+						</label>
+					{% endfor %}
+				</div>
+
+				<button type="submit" class="w-full bg-black hover:bg-slate-800 text-white font-bold py-4 rounded-xl text-sm tracking-wider transition-colors">
+					Confirmer la modification
+				</button>
+			</form>
+		</div>
+	</div>
+{% endblock %}
+
+{% block javascripts %}
+	 <script>
+			function openStatutModal(btn) {
+	const modal = document.getElementById('statut-modal');
+	const content = document.getElementById('statut-modal-content');
+	
+	document.getElementById('statut-form').action = btn.dataset.action;
+	document.getElementById('modal-csrf').value = btn.dataset.csrf;
+	document.getElementById('modal-student-name').textContent = btn.dataset.name;
+	document.getElementById('modal-avatar').textContent = btn.dataset.initials;
+	document.getElementById('modal-current-statut').textContent = btn.dataset.currentLabel;
+	
+	const colors = {
+	'PRESENT': 'bg-green-500',
+	'RETARD': 'bg-orange-400',
+	'ABSENT': 'bg-red-500'
+	};
+	document.getElementById('modal-color-indicator').className = 'w-3 h-3 rounded-full border border-black ml-auto ' + (colors[btn.dataset.current] || 'bg-gray-200');
+	
+	document.querySelectorAll('#statut-form input[name="statut"]').forEach(function (radio) {
+	radio.checked = (radio.value === btn.dataset.current);
+	});
+	
+	modal.classList.remove('hidden');
+	setTimeout(() => {
+	modal.classList.remove('opacity-0');
+	if (window.innerWidth < 640) {
+	content.classList.remove('translate-y-full');
+	} else {
+	content.classList.remove('scale-95');
+	}
+	}, 10);
+	}
+	
+	function closeStatutModal() {
+	const modal = document.getElementById('statut-modal');
+	const content = document.getElementById('statut-modal-content');
+	
+	modal.classList.add('opacity-0');
+	if (window.innerWidth < 640) {
+	content.classList.add('translate-y-full');
+	} else {
+	content.classList.add('scale-95');
+	}
+	
+	setTimeout(() => {
+	modal.classList.add('hidden');
+	}, 300);
+	}
+	
+	document.getElementById('statut-modal').addEventListener('click', function (e) {
+	if (e.target === this) 
+	closeStatutModal();
+	
+	});
+	
+	const searchInput = document.getElementById('emargement-search');
+	if (searchInput) {
+	searchInput.addEventListener('input', function () {
+	const q = this.value.toLowerCase();
+	document.querySelectorAll('.js-emargement-row').forEach(function (row) {
+	row.style.display = row.dataset.name.includes(q) ? '' : 'none';
+	});
+	});
+	}
+		</script>
+{% endblock %}

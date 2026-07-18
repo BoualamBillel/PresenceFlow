@@ -1,0 +1,154 @@
+{% extends 'formateur_base.html.twig' %}
+
+{% block title %}Mon Planning - PresenceFlow
+{% endblock %}
+
+{% block page_title %}Planning
+{% endblock %}
+
+{% block body %}
+	<main class="flex-grow p-4 lg:p-10 lg:max-w-5xl lg:mx-auto lg:w-full">
+		<div class="space-y-6">
+
+			<div class="flex items-end justify-between">
+				<div class="inline-block">
+					<h1 class="text-xl font-black text-black tracking-tight mb-1">Mon Planning</h1>
+					<div class="h-0.5 w-full bg-black"></div>
+				</div>
+				{% if selected_date != today %}
+					<a href="{{ path('app_formateur_planning') }}" class="text-[11px] font-bold text-slate-500 hover:text-black uppercase tracking-wider transition-colors">Aujourd'hui</a>
+				{% endif %}
+			</div>
+
+			{% set frDays = {'Mon': 'LUN', 'Tue': 'MAR', 'Wed': 'MER', 'Thu': 'JEU', 'Fri': 'VEN', 'Sat': 'SAM', 'Sun': 'DIM'} %}
+
+			<div class="lg:flex lg:items-center lg:gap-3">
+				<button type="button" id="carousel-prev" class="hidden lg:flex shrink-0 w-9 h-9 items-center justify-center border border-slate-300 rounded-lg bg-white text-slate-600 hover:border-black hover:text-black transition-colors">
+					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+					</svg>
+				</button>
+
+				<div id="days-carousel" class="flex overflow-x-auto space-x-3 pb-2 lg:pb-0 snap-x snap-mandatory lg:snap-none [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+					{% for day in days_carousel %}
+						{% set isCurrent = (day.format('Y-m-d') == selected_date) %}
+						{% set isToday = (day.format('Y-m-d') == today) %}
+						{% set dayLabel = frDays[day.format('D')]|default(day.format('D')) %}
+						<a href="{{ path('app_formateur_planning', {'date': day.format('Y-m-d')}) }}" class="{{ isCurrent ? 'js-day-current ' : '' }}snap-center shrink-0 w-16 py-3 border rounded-lg flex flex-col items-center justify-center transition-all {{ isCurrent ? 'bg-black border-black text-white shadow-md font-black' : (isToday ? 'bg-white border-black text-slate-900' : 'bg-white border-slate-300 text-slate-900 hover:border-black') }}">
+							<span class="text-[10px] uppercase tracking-wider {{ isCurrent ? 'text-gray-300' : 'text-slate-500' }}">{{ dayLabel }}</span>
+							<span class="text-lg font-bold mt-0.5">{{ day.format('d') }}</span>
+						</a>
+					{% endfor %}
+				</div>
+
+				<button type="button" id="carousel-next" class="hidden lg:flex shrink-0 w-9 h-9 items-center justify-center border border-slate-300 rounded-lg bg-white text-slate-600 hover:border-black hover:text-black transition-colors">
+					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+					</svg>
+				</button>
+			</div>
+
+			<div class="space-y-4 lg:space-y-0 lg:grid lg:grid-cols-2 lg:gap-6">
+				{% for session in sessions %}
+					{% set statut = session_statut(session) %}
+					{% set total = session.emargements|length %}
+					{% set presents = session.emargements|filter(e => e.statut == constant('App\\Enum\\EmargementStatut::PRESENT'))|length %}
+					{% set retards = session.emargements|filter(e => e.statut == constant('App\\Enum\\EmargementStatut::RETARD'))|length %}
+
+					<a href="{{ path('app_formateur_planning_show', {'id': session.id}) }}" class="block border-2 border-black rounded-lg p-4 bg-white transition-all hover:shadow-md">
+						<div class="flex items-center justify-between mb-3">
+							<div class="flex items-center gap-3">
+								{% if statut == constant('App\\Enum\\SessionStatut::EN_COURS') %}
+									<span class="bg-red-600 text-white text-[9px] font-black tracking-widest px-2.5 py-1 rounded-full uppercase">En cours</span>
+								{% elseif statut == constant('App\\Enum\\SessionStatut::A_VENIR') %}
+									<span class="bg-black text-white text-[9px] font-black tracking-widest px-2.5 py-1 rounded-full uppercase">À venir</span>
+								{% else %}
+									<span class="border border-black text-black text-[9px] font-black tracking-widest px-2.5 py-1 rounded-full uppercase">Terminé</span>
+								{% endif %}
+								<span class="text-sm font-black text-slate-900">{{ session.heureDebut|date('H:i') }}
+									-
+									{{ session.heureFin|date('H:i') }}</span>
+							</div>
+							<svg class="w-5 h-5 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+							</svg>
+						</div>
+
+						<h4 class="text-sm font-black text-slate-900 leading-snug tracking-tight mb-1.5">{{ session.matiere.nom }}</h4>
+
+						<div class="text-xs text-slate-600 font-medium space-y-1">
+							<div class="flex items-center gap-2">
+								<svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+								</svg>
+								<span>{{ session.classe.nom }}</span>
+							</div>
+							<div class="flex items-center gap-2">
+								<svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+								</svg>
+								<span>{{ session.emplacement }}</span>
+							</div>
+							{% if total > 0 %}
+								<div class="flex items-center gap-2">
+									<svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+									</svg>
+									<span>{{ presents + retards }}/{{ total }}
+										présents</span>
+								</div>
+							{% endif %}
+						</div>
+					</a>
+				{% else %}
+					<div class="p-8 text-center border-2 border-dashed border-slate-300 rounded-lg bg-gray-50 lg:col-span-full">
+						<p class="text-sm font-medium text-slate-500">Aucun cours de planifié pour cette journée.</p>
+					</div>
+				{% endfor %}
+			</div>
+
+		</div>
+	</main>
+{% endblock %}
+
+{% block javascripts %}
+	 <script>
+			const carousel = document.getElementById('days-carousel');
+	const currentDay = carousel.querySelector('.js-day-current');
+	if (currentDay) {
+	carousel.scrollLeft = currentDay.offsetLeft - (carousel.clientWidth / 2) + (currentDay.clientWidth / 2);
+	}
+	
+	const prevBtn = document.getElementById('carousel-prev');
+	const nextBtn = document.getElementById('carousel-next');
+	
+	function updateCarouselButtons() {
+	if (!prevBtn || !nextBtn) 
+	return;
+	
+	const max = carousel.scrollWidth - carousel.clientWidth;
+	prevBtn.classList.toggle('opacity-30', carousel.scrollLeft <= 0);
+	nextBtn.classList.toggle('opacity-30', carousel.scrollLeft >= max - 1);
+	}
+	
+	if (prevBtn && nextBtn) {
+	const page = () => 7 * 76;
+	prevBtn.addEventListener('click', () => carousel.scrollBy({left: -page(), behavior: 'smooth'}));
+	nextBtn.addEventListener('click', () => carousel.scrollBy({left: page(), behavior: 'smooth'}));
+	carousel.addEventListener('scroll', updateCarouselButtons);
+	updateCarouselButtons();
+	}
+	
+	carousel.addEventListener('wheel', function (e) {
+	if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) 
+	return;
+	
+	const max = this.scrollWidth - this.clientWidth;
+	if ((e.deltaY > 0 && this.scrollLeft < max) || (e.deltaY < 0 && this.scrollLeft > 0)) {
+	e.preventDefault();
+	this.scrollLeft += e.deltaY;
+	}
+	}, {passive: false});
+		</script>
+{% endblock %}
