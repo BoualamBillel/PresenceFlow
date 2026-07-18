@@ -103,4 +103,17 @@ class SessionCoursRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    public function findClassesByFormateur(User $formateur): array
+    {
+        return $this->createQueryBuilder('s')
+            ->select('c')
+            ->distinct()
+            ->innerJoin('s.classe', 'c')
+            ->andWhere('s.formateur = :formateur')
+            ->setParameter('formateur', $formateur)
+            ->orderBy('c.nom', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }

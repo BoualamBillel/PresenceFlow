@@ -1,0 +1,120 @@
+{% extends 'formateur_base.html.twig' %}
+
+{% block title %}
+	{{ classe.nom }}
+	- Mes Classes
+{% endblock %}
+
+{% block page_title %}Mes classes
+{% endblock %}
+
+{% block body %}
+	{% set seuil = 80 %}
+	{% set vigilanceGlobale = taux_global is not null and taux_global < seuil %}
+
+	<main class="flex-grow p-4 lg:p-10 lg:max-w-5xl lg:mx-auto lg:w-full">
+		<div class="space-y-6">
+
+			<a href="{{ path('app_formateur_classes') }}" class="inline-flex items-center gap-2 text-[11px] font-bold text-slate-500 hover:text-black uppercase tracking-wider transition-colors">
+				<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+				</svg>
+				Mes classes
+			</a>
+
+			<div class="text-center">
+				<h1 class="text-xl font-black text-black tracking-tight">{{ classe.nom }}</h1>
+				<p class="text-xs text-slate-500 font-medium mt-1">{{ classe.annee }}
+					-
+					{{ classe.filiere.description }}</p>
+				<span class="inline-block border-2 border-black rounded px-3 py-1 text-[10px] font-black tracking-widest mt-3">{{ etudiants|length }}
+					ÉTUDIANTS</span>
+			</div>
+
+			<div class="space-y-6 lg:space-y-0 lg:grid lg:grid-cols-2 lg:gap-10 lg:items-start">
+
+				<div class="border-2 border-black rounded-lg p-5">
+					<div class="flex items-start justify-between gap-4">
+						<div>
+							<p class="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Assiduité globale</p>
+							<p class="text-xs text-slate-500">{{ vigilanceGlobale ? 'Des absences récurrentes sont à surveiller.' : 'Le groupe est assidu.' }}</p>
+						</div>
+						<p class="text-3xl font-black leading-none flex items-center gap-2 {{ vigilanceGlobale ? 'text-orange-500' : 'text-black' }}">
+							{% if vigilanceGlobale %}
+								<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+								</svg>
+							{% endif %}
+							{{ taux_global is not null ? taux_global ~ '%' : '—' }}
+						</p>
+					</div>
+					<div class="w-full h-2 bg-white border border-black flex mt-4">
+						<div class="h-full {{ vigilanceGlobale ? 'bg-orange-400' : 'bg-black' }}" style="width: {{ taux_global|default(0) }}%;"></div>
+					</div>
+				</div>
+
+				<div>
+					<div class="inline-block mb-4">
+						<h2 class="text-base font-black text-black tracking-tight mb-1">Liste des étudiants</h2>
+						<div class="h-0.5 w-full bg-black"></div>
+					</div>
+
+					<div class="relative mb-4">
+						<svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+						</svg>
+						<input type="text" id="etudiant-search" placeholder="Rechercher un étudiant..." class="w-full pl-9 pr-3 py-3 border border-slate-300 bg-white text-black text-sm rounded-lg focus:outline-none focus:border-black">
+					</div>
+
+					<div class="space-y-3 lg:max-h-[32rem] lg:overflow-y-auto lg:pr-1">
+						{% for row in etudiants %}
+							{% set vigilance = row.taux is not null and row.taux < seuil %}
+
+							<div class="js-etudiant-row flex items-center gap-3 border border-slate-200 rounded-lg p-3 bg-white" data-name="{{ (row.etudiant.prenom ~ ' ' ~ row.etudiant.nom)|lower }}">
+								<div class="w-10 h-10 rounded-full bg-blue-100 text-blue-800 flex items-center justify-center text-xs font-black shrink-0">
+									{{ (row.etudiant.prenom|first ~ row.etudiant.nom|first)|upper }}
+								</div>
+								<div class="flex-1 min-w-0">
+									<p class="text-sm font-bold text-slate-900 truncate">{{ row.etudiant.prenom }}
+										{{ row.etudiant.nom }}</p>
+									<span class="inline-block text-[9px] font-bold px-2 py-0.5 rounded mt-1 {{ row.absents > 0 ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-700' }}">
+										soit
+										{{ row.absents }}
+										absence{{ row.absents > 1 ? 's' }}
+									</span>
+								</div>
+								<span class="text-sm font-black shrink-0 flex items-center gap-1.5 {{ vigilance ? 'text-orange-500' : 'text-black' }}">
+									{% if vigilance %}
+										<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+										</svg>
+									{% endif %}
+									{{ row.taux is not null ? row.taux ~ '%' : '—' }}
+								</span>
+							</div>
+						{% else %}
+							<div class="p-8 text-center border border-dashed border-slate-300 rounded-lg bg-gray-50">
+								<p class="text-sm font-medium text-slate-500">Aucun étudiant dans cette classe.</p>
+							</div>
+						{% endfor %}
+					</div>
+				</div>
+
+			</div>
+		</div>
+	</main>
+{% endblock %}
+
+{% block javascripts %}
+	 <script>
+			const searchInput = document.getElementById('etudiant-search');
+	if (searchInput) {
+	searchInput.addEventListener('input', function () {
+	const q = this.value.toLowerCase();
+	document.querySelectorAll('.js-etudiant-row').forEach(function (row) {
+	row.style.display = row.dataset.name.includes(q) ? '' : 'none';
+	});
+	});
+	}
+		</script>
+{% endblock %}

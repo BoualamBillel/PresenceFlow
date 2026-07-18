@@ -90,4 +90,34 @@ class EmargementRepository extends ServiceEntityRepository
 
         return $qb->getQuery()->getResult();
     }
+
+    public function findStatistiquesParClasse(User $formateur): array
+    {
+        return $this->createQueryBuilder('e')
+            ->select('c.id AS classeId', 'COUNT(e.id) AS total', "SUM(CASE WHEN e.statut IN ('PRESENT', 'RETARD') THEN 1 ELSE 0 END) AS presents")
+            ->innerJoin('e.session', 's')
+            ->innerJoin('s.classe', 'c')
+            ->andWhere('s.formateur = :formateur')
+            ->andWhere("e.statut != 'EN_ATTENTE'")
+            ->setParameter('formateur', $formateur)
+            ->groupBy('c.id')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findStatistiquesParEtudiant(Classe $classe, User $formateur): array
+    {
+        return $this->createQueryBuilder('e')
+            ->select('u.id AS etudiantId', 'COUNT(e.id) AS total', "SUM(CASE WHEN e.statut IN ('PRESENT', 'RETARD') THEN 1 ELSE 0 END) AS presents", "SUM(CASE WHEN e.statut = 'ABSENT' THEN 1 ELSE 0 END) AS absents")
+            ->innerJoin('e.session', 's')
+            ->innerJoin('e.etudiant', 'u')
+            ->andWhere('s.classe = :classe')
+            ->andWhere('s.formateur = :formateur')
+            ->andWhere("e.statut != 'EN_ATTENTE'")
+            ->setParameter('classe', $classe)
+            ->setParameter('formateur', $formateur)
+            ->groupBy('u.id')
+            ->getQuery()
+            ->getResult();
+    }
 }

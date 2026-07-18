@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Classe;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -20,7 +21,7 @@ class ClasseRepository extends ServiceEntityRepository
     {
         $qb = $this->createQueryBuilder('c')
             ->leftJoin('c.filiere', 'f')
-            ->addSelect('f') 
+            ->addSelect('f')
             ->leftJoin('c.etudiants', 'e')
             ->addSelect('e')
             ->orderBy('c.nom', 'ASC');
@@ -35,9 +36,21 @@ class ClasseRepository extends ServiceEntityRepository
         // Recherche textuelle sur la classe OU la filière
         if ($searchTerm) {
             $qb->andWhere('(LOWER(c.nom) LIKE LOWER(:search) OR LOWER(c.annee) LIKE LOWER(:search) OR LOWER(f.nom) LIKE LOWER(:search))')
-               ->setParameter('search', '%' . $searchTerm . '%');
+                ->setParameter('search', '%' . $searchTerm . '%');
         }
 
         return $qb->getQuery()->getResult();
+    }
+
+    public function findByFormateur(User $formateur): array
+    {
+        return $this->createQueryBuilder('c')
+            ->distinct()
+            ->innerJoin('c.sessions', 's', 'WITH', 's.formateur = :formateur')
+            ->andWhere('c.isArchived = false')
+            ->setParameter('formateur', $formateur)
+            ->orderBy('c.nom', 'ASC')
+            ->getQuery()
+            ->getResult();
     }
 }
