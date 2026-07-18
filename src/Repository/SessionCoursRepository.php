@@ -33,12 +33,12 @@ class SessionCoursRepository extends ServiceEntityRepository
         // Injection dynamique des filtres si présents
         if ($classeId) {
             $qb->andWhere('c.id = :classeId')
-               ->setParameter('classeId', $classeId);
+                ->setParameter('classeId', $classeId);
         }
 
         if ($formateurId) {
             $qb->andWhere('f.id = :formateurId')
-               ->setParameter('formateurId', $formateurId);
+                ->setParameter('formateurId', $formateurId);
         }
 
         return $qb->orderBy('s.heureDebut', 'ASC')
@@ -90,5 +90,17 @@ class SessionCoursRepository extends ServiceEntityRepository
             ->setParameter('date', $date->format('Y-m-d'))
             ->getQuery()
             ->getSingleScalarResult();
+    }
+
+    public function findByFormateurAndDate(User $formateur, \DateTimeImmutable $date): array
+    {
+        return $this->createQueryBuilder('s')
+            ->andWhere('s.formateur = :formateur')
+            ->andWhere('s.dateCours = :date')
+            ->setParameter('formateur', $formateur)
+            ->setParameter('date', $date->format('Y-m-d'))
+            ->orderBy('s.heureDebut', 'ASC')
+            ->getQuery()
+            ->getResult();
     }
 }

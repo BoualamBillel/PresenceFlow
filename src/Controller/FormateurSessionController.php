@@ -39,7 +39,7 @@ class FormateurSessionController extends AbstractController
         $currentSession = $this->sessionManager->findCurrentSessionForFormateur($user);
 
         if (!$currentSession) {
-            return $this->render('formateur/session_show.html.twig', [
+            return $this->render('formateur/dashboard.html.twig', [
                 'session' => null,
                 'qr_code_uri' => null,
                 'qr_target_url' => null,
@@ -62,7 +62,7 @@ class FormateurSessionController extends AbstractController
             $timeLeft = $currentSession->getQrTokenExpiresAt()->getTimestamp() - $this->clock->now()->getTimestamp();
         }
 
-        return $this->render('formateur/session_show.html.twig', [
+        return $this->render('formateur/dashboard.html.twig', [
             'session' => $currentSession,
             'qr_code_uri' => $qrCodeUri,
             'qr_target_url' => $signerUrl,
@@ -128,7 +128,13 @@ class FormateurSessionController extends AbstractController
             if ($nouveauStatut) {
                 $this->presenceManager->corriger($emargement, $nouveauStatut);
                 $em->flush();
+                $this->addFlash('success', 'Statut de ' . $emargement->getEtudiant()->getPrenom() . ' ' . $emargement->getEtudiant()->getNom() . ' mis à jour.');
             }
+        }
+
+        $redirect = $request->request->get('_redirect');
+        if (is_string($redirect) && str_starts_with($redirect, '/')) {
+            return $this->redirect($redirect);
         }
 
         return $this->redirectToRoute('app_formateur_dashboard');
