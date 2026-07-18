@@ -16,7 +16,7 @@ use Symfony\Component\Routing\Attribute\Route;
 final class ClasseController extends AbstractController
 {
     #[Route(name: 'app_classe_index', methods: ['GET'])]
-   public function index(Request $request, ClasseRepository $classeRepository): Response
+    public function index(Request $request, ClasseRepository $classeRepository): Response
     {
         $searchTerm = $request->query->get('q');
         $filter = $request->query->get('filter', 'actives');
@@ -55,38 +55,76 @@ final class ClasseController extends AbstractController
 
     #[Route('/{id}/add-students', name: 'app_classe_add_students', methods: ['GET', 'POST'])]
     public function addStudents(
-        Request $request, 
-        Classe $classe, 
-        UserRepository $userRepository, 
+        Request $request,
+        Classe $classe,
+        UserRepository $userRepository,
         EntityManagerInterface $entityManager
     ): Response {
         if ($request->isMethod('POST')) {
-            $studentIds = $request->request->all('students'); 
-
-            if (!empty($studentIds)) {
-                $addedCount = 0;
-                foreach ($studentIds as $id) {
-                    $student = $userRepository->find($id);
-                    if ($student) {
-                        $classe->addEtudiant($student);
-                        $addedCount++;
-                    }
-                }
-                $entityManager->flush();
-                $this->addFlash('success', $addedCount . ' étudiant(s) ajouté(s) à la classe.');
+            if (!$this->isCsrfTokenValid('classe_add_students' . $classe->getId(), $request->request->get('_token'))) {
+                throw $this->createAccessDeniedException();
             }
 
-            return $this->redirectToRoute('app_classe_show', ['id' => $classe->getId()]);
+            $studentIds = $request->request->all('students');
+            $addedCount = 0;
+
+            foreach ($studentIds as $id) {
+                $student = $userRepository->find($id);
+
+                if (!$student || $classe->getEtudiants()->contains($student)) {
+                    continue;
+                }
+
+                $roles = $student->getRoles();
+                if (in_array('ROLE_ADMIN', $roles, true) || in_array('ROLE_FORMATEUR', $roles, true)) {
+                    continue;
+                }
+
+                $classe->addEtudiant($student);
+                $addedCount++;
+            }
+
+            if ($addedCount > 0) {
+                $entityManager->flush();
+                $this->addFlash('success', $addedCount . ' étudiant(s) ajouté(s) à la classe.');
+            } else {
+                $this->addFlash('error', 'Aucun étudiant valide sélectionné.');
+            }
+
+            return $this->redirectToRoute('app_classe_add_students', ['id' => $classe->getId()]);
         }
 
-        $searchTerm = $request->query->get('q');
-        $availableStudents = $userRepository->findAvailableForClasse($classe->getId(), $searchTerm);
+        $search = trim((string) $request->query->get('q', ''));
 
         return $this->render('classe/add_students.html.twig', [
             'classe' => $classe,
-            'students' => $availableStudents,
-            'search_term' => $searchTerm,
+            'membres' => $classe->getEtudiants(),
+            'etudiants' => $userRepository->findEtudiantsDisponiblesPourClasse($classe, $search),
+            'search_term' => $search,
         ]);
+    }
+
+    #[Route('/{id}/remove-student/{studentId}', name: 'app_classe_remove_student', methods: ['POST'])]
+    public function removeStudent(
+        Request $request,
+        Classe $classe,
+        int $studentId,
+        UserRepository $userRepository,
+        EntityManagerInterface $entityManager
+    ): Response {
+        if (!$this->isCsrfTokenValid('classe_remove_student' . $studentId, $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException();
+        }
+
+        $student = $userRepository->find($studentId);
+
+        if ($student && $classe->getEtudiants()->contains($student)) {
+            $classe->removeEtudiant($student);
+            $entityManager->flush();
+            $this->addFlash('success', $student->getPrenom() . ' ' . $student->getNom() . ' a été retiré(e) de la classe.');
+        }
+
+        return $this->redirectToRoute('app_classe_add_students', ['id' => $classe->getId()]);
     }
 
     #[Route('/{id}', name: 'app_classe_show', methods: ['GET'])]
@@ -118,35 +156,11 @@ final class ClasseController extends AbstractController
     #[Route('/{id}', name: 'app_classe_delete', methods: ['POST'])]
     public function delete(Request $request, Classe $classe, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$classe->getId(), $request->getPayload()->getString('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $classe->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($classe);
             $entityManager->flush();
         }
 
         return $this->redirectToRoute('app_classe_index', [], Response::HTTP_SEE_OTHER);
-    }
-
-    #[Route('/{id}/remove-student/{studentId}', name: 'app_classe_remove_student', methods: ['POST'])]
-    public function removeStudent(
-        Request $request, 
-        Classe $classe, 
-        int $studentId, 
-        UserRepository $userRepository, 
-        EntityManagerInterface $entityManager
-    ): Response {
-        if ($this->isCsrfTokenValid('remove'.$studentId, $request->request->get('_token'))) {
-            
-            $student = $userRepository->find($studentId);
-            
-            if ($student) {
-                // Rupture de la relation ManyToMany
-                $classe->removeEtudiant($student);
-                $entityManager->flush();
-                
-                $this->addFlash('success', $student->getPrenom() . ' a été retiré(e) de la classe.');
-            }
-        }
-
-        return $this->redirectToRoute('app_classe_show', ['id' => $classe->getId()], Response::HTTP_SEE_OTHER);
     }
 }

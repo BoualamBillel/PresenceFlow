@@ -7,6 +7,8 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 #[ORM\Entity(repositoryClass: SessionCoursRepository::class)]
 class SessionCours
@@ -17,30 +19,38 @@ class SessionCours
     private ?int $id = null;
 
     #[ORM\Column(type: Types::DATE_IMMUTABLE)]
+    #[Assert\NotNull(message: 'La date du cours est obligatoire.')]
     private ?\DateTimeImmutable $dateCours = null;
 
     #[ORM\Column(type: Types::TIME_IMMUTABLE)]
+    #[Assert\NotNull(message: "L'heure de début est obligatoire.")]
     private ?\DateTimeImmutable $heureDebut = null;
 
     #[ORM\Column(type: Types::TIME_IMMUTABLE)]
+    #[Assert\NotNull(message: "L'heure de fin est obligatoire.")]
     private ?\DateTimeImmutable $heureFin = null;
 
     #[ORM\Column(nullable: true)]
-    private ?int $toleranceRetard = null;
+    #[Assert\PositiveOrZero(message: 'La tolérance doit être un nombre positif.')]
+    private ?int $toleranceRetard = 15;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'La salle / le lieu est obligatoire.')]
     private ?string $emplacement = null;
 
     #[ORM\ManyToOne(inversedBy: 'sessions')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Assert\NotNull(message: 'Sélectionnez une classe.')]
     private ?Classe $classe = null;
 
     #[ORM\ManyToOne(inversedBy: 'sessionsFormateur')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Assert\NotNull(message: 'Sélectionnez un formateur.')]
     private ?User $formateur = null;
 
     #[ORM\ManyToOne(inversedBy: 'sessions')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Assert\NotNull(message: 'Sélectionnez une matière.')]
     private ?Matiere $matiere = null;
 
     #[ORM\Column(length: 255, nullable: true)]
@@ -70,7 +80,7 @@ class SessionCours
         return $this->dateCours;
     }
 
-    public function setDateCours(\DateTimeImmutable $dateCours): static
+    public function setDateCours(?\DateTimeImmutable $dateCours): static
     {
         $this->dateCours = $dateCours;
 
@@ -82,7 +92,7 @@ class SessionCours
         return $this->heureDebut;
     }
 
-    public function setHeureDebut(\DateTimeImmutable $heureDebut): static
+    public function setHeureDebut(?\DateTimeImmutable $heureDebut): static
     {
         $this->heureDebut = $heureDebut;
 
@@ -94,7 +104,7 @@ class SessionCours
         return $this->heureFin;
     }
 
-    public function setHeureFin(\DateTimeImmutable $heureFin): static
+    public function setHeureFin(?\DateTimeImmutable $heureFin): static
     {
         $this->heureFin = $heureFin;
 
@@ -118,7 +128,7 @@ class SessionCours
         return $this->emplacement;
     }
 
-    public function setEmplacement(string $emplacement): static
+    public function setEmplacement(?string $emplacement): static
     {
         $this->emplacement = $emplacement;
 
@@ -161,41 +171,6 @@ class SessionCours
         return $this;
     }
 
-   /**
-     * Déduit dynamiquement le statut de la session (Comparaison stricte par chaînes)
-     */
-    public function getStatut(): string
-    {
-        if (!$this->dateCours || !$this->heureDebut || !$this->heureFin) {
-            return 'INCONNU';
-        }
-
-        $now = new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris'));
-        
-        $todayStr = $now->format('Y-m-d');
-        $currentTime = $now->format('H:i:s');
-
-        $sessionDateStr = $this->dateCours->format('Y-m-d');
-        $debut = $this->heureDebut->format('H:i:s');
-        $fin = $this->heureFin->format('H:i:s');
-
-        if ($sessionDateStr > $todayStr) {
-            return 'A_VENIR';
-        }
-        
-        if ($sessionDateStr < $todayStr) {
-            return 'TERMINE';
-        }
-
-        if ($currentTime < $debut) {
-            return 'A_VENIR';
-        } elseif ($currentTime >= $debut && $currentTime <= $fin) {
-            return 'EN_COURS';
-        } else {
-            return 'TERMINE';
-        }
-    }
-
     public function getQrCodeToken(): ?string
     {
         return $this->qrCodeToken;
@@ -218,32 +193,6 @@ class SessionCours
         $this->qrTokenExpiresAt = $qrTokenExpiresAt;
 
         return $this;
-    }
-
-    /**
-     * Génère un nouveau jeton de sécurité pour l'émargement (valide 5 minutes)
-     */
-    public function generateNewQrToken(): void
-    {
-        // Génération d'une chaîne hexadécimale sécurisée de 32 caractères
-        $this->qrCodeToken = bin2hex(random_bytes(16));
-        
-        // Expiration définie à +5 minutes par rapport à l'heure du serveur (Paris)
-        $now = new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris'));
-        $this->qrTokenExpiresAt = $now->modify('+5 minutes');
-    }
-
-    /**
-     * Vérifie si le jeton actuel est toujours valide
-     */
-    public function isQrTokenValid(): bool
-    {
-        if (!$this->qrCodeToken || !$this->qrTokenExpiresAt) {
-            return false;
-        }
-
-        $now = new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris'));
-        return $this->qrTokenExpiresAt > $now;
     }
 
     /**
@@ -274,5 +223,15 @@ class SessionCours
         }
 
         return $this;
+    }
+
+    #[Assert\Callback]
+    public function validateHoraires(ExecutionContextInterface $context): void
+    {
+        if ($this->heureDebut && $this->heureFin && $this->heureFin <= $this->heureDebut) {
+            $context->buildViolation("L'heure de fin doit être postérieure à l'heure de début.")
+                ->atPath('heureFin')
+                ->addViolation();
+        }
     }
 }

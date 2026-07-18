@@ -5,21 +5,19 @@ namespace App\Controller;
 use App\Entity\User;
 use App\Form\UpdateEmailType;
 use App\Form\UpdatePasswordType;
+use App\Service\UserManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 
 class EtudiantProfilController extends AbstractController
 {
     #[Route('/etudiant/profil', name: 'app_etudiant_profil')]
-    public function index(Request $request, EntityManagerInterface $em, UserPasswordHasherInterface $hasher): Response
+    public function index(Request $request, EntityManagerInterface $em, UserManager $userManager): Response
     {
-        /**
-         * @var User $user
-         */
+        /** @var User $user */
         $user = $this->getUser();
 
         // --- 1. GESTION DU FORMULAIRE EMAIL ---
@@ -37,11 +35,8 @@ class EtudiantProfilController extends AbstractController
         $formPassword->handleRequest($request);
 
         if ($formPassword->isSubmitted() && $formPassword->isValid()) {
-            $newPassword = $formPassword->get('newPassword')->getData();
-            
-            // Hashage et application au User
-            $user->setPassword($hasher->hashPassword($user, $newPassword));
-            
+            $userManager->changePassword($user, $formPassword->get('newPassword')->getData());
+
             $em->flush();
             $this->addFlash('success', 'Votre mot de passe a été modifié avec succès.');
             return $this->redirectToRoute('app_etudiant_profil');

@@ -2,15 +2,14 @@
 
 {% block title %}Profil - PresenceFlow{% endblock %}
 
-{# Si tu as dynamisé ton header dans etudiant_base.html.twig, sinon ignore cette ligne #}
-{% block header_title %}Profil{% endblock %}
+{% block page_title %}Profil{% endblock %}
 
 {% block body %}
-<main class="flex-grow p-6 flex flex-col items-center relative pb-32 w-full max-w-md mx-auto font-sans">
+<main class="flex-grow p-6 lg:p-10 flex flex-col items-center relative pb-32 lg:pb-10 w-full max-w-md mx-auto font-sans">
     
     {# --- AVATAR (Génération automatique des initiales) --- #}
     {% set initials = (app.user.prenom|first ~ app.user.nom|first)|upper %}
-    <div class="w-20 h-20 bg-gray-200 rounded-3xl flex items-center justify-center mb-8 shadow-sm">
+    <div class="w-20 h-20 bg-slate-200 rounded-lg flex items-center justify-center mb-8 shadow-sm">
         <span class="text-2xl font-black text-black">{{ initials }}</span>
     </div>
 
@@ -25,14 +24,14 @@
         </h2>
         
         <div class="inline-block border border-black px-6 py-1 text-[11px] font-bold tracking-widest uppercase">
-            Eleve
+            Élève
         </div>
     </div>
 
     {# Champ Email (Clic = Ouverture Modale) #}
     <div class="w-full mb-10">
-        <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-widest mb-1.5">Email</label>
-        <button type="button" onclick="openModal('email-modal')" class="flex justify-between items-center w-full p-4 border border-black bg-white hover:bg-gray-50 transition-colors group">
+        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Email</label>
+        <button type="button" onclick="openModal('email-modal')" class="flex justify-between items-center w-full p-4 border border-black rounded-lg bg-white hover:bg-slate-50 transition-colors group">
             <span class="text-xs font-bold text-black tracking-wide">{{ app.user.email|default('lucas.bergval@ecole.fr')|upper }}</span>
             <svg class="w-5 h-5 text-black group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
         </button>
@@ -47,8 +46,8 @@
 
     {# Champ Mot de passe (Clic = Ouverture Modale) #}
     <div class="w-full">
-        <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-widest mb-1.5">Mot de passe</label>
-        <button type="button" onclick="openModal('password-modal')" class="flex justify-between items-center w-full p-4 border border-black bg-white hover:bg-gray-50 transition-colors group">
+        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Mot de passe</label>
+        <button type="button" onclick="openModal('password-modal')" class="flex justify-between items-center w-full p-4 border border-black rounded-lg bg-white hover:bg-slate-50 transition-colors group">
             <span class="text-lg font-black text-black tracking-widest mt-1">••••••••••••</span>
             <svg class="w-5 h-5 text-black group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
         </button>
@@ -65,7 +64,7 @@
     <div class="bg-white w-full max-w-md sm:rounded-2xl rounded-t-2xl p-6 sm:p-8 pb-24 sm:pb-8 border-t-2 sm:border-2 border-black transform transition-transform translate-y-full sm:translate-y-0" id="email-modal-content">
         <div class="flex justify-between items-center mb-6">
             <h3 class="text-xl font-black text-black">Modifier l'email</h3>
-            <button onclick="closeModal('email-modal')" class="text-gray-500 hover:text-black">
+            <button onclick="closeModal('email-modal')" class="text-slate-400 hover:text-black">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
             </button>
         </div>
@@ -73,10 +72,10 @@
         {# Formulaire Symfony à intégrer ici côté Backend #}
         <form method="post" action="" class="space-y-4">
             <div>
-                <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">Nouvel Email</label>
-                <input type="email" name="new_email" value="{{ app.user.email|default('') }}" class="w-full p-4 border border-black bg-white focus:ring-2 focus:ring-black outline-none text-sm font-bold text-black" required>
+                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Nouvel Email</label>
+                <input type="email" name="new_email" value="{{ app.user.email|default('') }}" class="w-full p-4 border border-black rounded-lg bg-white focus:border-black focus:outline-none text-sm font-bold text-black" required>
             </div>
-            <button type="submit" class="w-full bg-black text-white font-bold py-4 text-sm tracking-widest uppercase hover:bg-gray-800 transition-colors">
+            <button type="submit" class="w-full bg-black text-white font-bold py-4 text-sm tracking-widest uppercase hover:bg-slate-800 transition-colors">
                 Enregistrer
             </button>
         </form>
@@ -85,10 +84,10 @@
 
 {# 2. Modale Édition Mot de Passe #}
 <div id="password-modal" class="fixed inset-0 z-[60] hidden flex flex-col justify-end sm:justify-center items-center bg-black/40 backdrop-blur-sm transition-opacity">
-    <div class="bg-white w-full max-w-md sm:rounded-2xl rounded-t-2xl p-6 sm:p-8 pb-24 sm:pb-8  border-t-2 sm:border-2 border-black transform transition-transform translate-y-full sm:translate-y-0" id="password-modal-content">
+    <div class="bg-white w-full max-w-md sm:rounded-2xl rounded-t-2xl p-6 sm:p-8 pb-24 sm:pb-8 border-t-2 sm:border-2 border-black transform transition-transform translate-y-full sm:translate-y-0" id="password-modal-content">
         <div class="flex justify-between items-center mb-6">
             <h3 class="text-xl font-black text-black">Modifier le mot de passe</h3>
-            <button onclick="closeModal('password-modal')" class="text-gray-500 hover:text-black">
+            <button onclick="closeModal('password-modal')" class="text-slate-400 hover:text-black">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
             </button>
         </div>
@@ -96,14 +95,14 @@
         {# Formulaire Symfony à intégrer ici côté Backend #}
         <form method="post" action="" class="space-y-4">
             <div>
-                <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">Mot de passe actuel</label>
-                <input type="password" name="old_password" class="w-full p-4 border border-black bg-white focus:ring-2 focus:ring-black outline-none text-sm font-bold text-black" required>
+                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Mot de passe actuel</label>
+                <input type="password" name="old_password" class="w-full p-4 border border-black rounded-lg bg-white focus:border-black focus:outline-none text-sm font-bold text-black" required>
             </div>
             <div>
-                <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">Nouveau mot de passe</label>
-                <input type="password" name="new_password" class="w-full p-4 border border-black bg-white focus:ring-2 focus:ring-black outline-none text-sm font-bold text-black" required>
+                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Nouveau mot de passe</label>
+                <input type="password" name="new_password" class="w-full p-4 border border-black rounded-lg bg-white focus:border-black focus:outline-none text-sm font-bold text-black" required>
             </div>
-            <button type="submit" class="w-full bg-black text-white font-bold py-4 text-sm tracking-widest uppercase mt-4 hover:bg-gray-800 transition-colors">
+            <button type="submit" class="w-full bg-black text-white font-bold py-4 text-sm tracking-widest uppercase mt-4 hover:bg-slate-800 transition-colors">
                 Mettre à jour
             </button>
         </form>

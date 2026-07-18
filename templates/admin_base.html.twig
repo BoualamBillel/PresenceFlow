@@ -9,19 +9,37 @@
     {% block stylesheets %}{% endblock %}
 </head>
 
-<body class="bg-slate-50 min-h-screen flex flex-col font-sans pb-20">
+<body class="bg-slate-50 min-h-screen flex flex-col font-sans pb-20 lg:pb-0">
 
     {% set current_route = app.request.attributes.get('_route')|default('') %}
 
-    {# --- OVERLAY & SIDEBAR (Cachée par défaut sur mobile) --- #}
-    <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-40 hidden transition-opacity opacity-0"></div>
+    {# --- OVERLAY & SIDEBAR (tiroir sur mobile, permanente sur desktop) --- #}
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-40 hidden transition-opacity opacity-0 lg:hidden"></div>
     <aside id="sidebar"
-        class="fixed inset-y-0 left-0 w-72 bg-white shadow-2xl z-50 transform -translate-x-full transition-transform duration-300 flex flex-col">
+        class="fixed inset-y-0 left-0 w-72 bg-white shadow-2xl lg:shadow-none lg:border-r lg:border-slate-200 z-50 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 flex flex-col">
         <div class="p-6 border-b border-slate-100">
             <h2 class="text-2xl font-black text-slate-900 tracking-tight">Administration</h2>
         </div>
 
         <nav class="flex-1 p-4 space-y-2 mt-4">
+            <a href="{{ path('app_admin_dashboard') }}"
+                class="flex items-center space-x-4 px-4 py-3 rounded-lg transition-colors {{ current_route starts with 'app_admin_dashboard' ? 'text-slate-900 font-bold bg-slate-100' : 'text-slate-500 font-semibold hover:bg-slate-50' }}">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z">
+                    </path>
+                </svg>
+                <span>DASHBOARD</span>
+            </a>
+            <a href="{{ path('app_admin_users') }}"
+                class="flex items-center space-x-4 px-4 py-3 rounded-lg transition-colors {{ current_route starts with 'app_admin_users' or current_route starts with 'app_user_' ? 'text-slate-900 font-bold bg-slate-100' : 'text-slate-500 font-semibold hover:bg-slate-50' }}">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z">
+                    </path>
+                </svg>
+                <span>UTILISATEURS</span>
+            </a>
             <a href="{{ path('app_filiere_index') }}"
                 class="flex items-center space-x-4 px-4 py-3 rounded-lg transition-colors {{ current_route starts with 'app_filiere_' ? 'text-slate-900 font-bold bg-slate-100' : 'text-slate-500 font-semibold hover:bg-slate-50' }}">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -41,7 +59,7 @@
                 <span>CLASSES</span>
             </a>
             <a href="{{ path('app_session_cours_index')}}"
-                class="flex items-center space-x-4 px-4 py-3 rounded-lg transition-colors {{ current_route starts with 'app_planning_' ? 'text-slate-900 font-bold bg-slate-100' : 'text-slate-500 font-semibold hover:bg-slate-50' }}">
+                class="flex items-center space-x-4 px-4 py-3 rounded-lg transition-colors {{ current_route starts with 'app_session_cours_' ? 'text-slate-900 font-bold bg-slate-100' : 'text-slate-500 font-semibold hover:bg-slate-50' }}">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
@@ -49,14 +67,32 @@
                 </svg>
                 <span>SESSIONS</span>
             </a>
+            <a href="{{ path('admin_justificatif_index') }}"
+                class="flex items-center space-x-4 px-4 py-3 rounded-lg transition-colors {{ current_route starts with 'admin_justificatif_' ? 'text-slate-900 font-bold bg-slate-100' : 'text-slate-500 font-semibold hover:bg-slate-50' }}">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414A1 1 0 0112.586 2H19a2 2 0 012 2v14a2 2 0 01-2 2z">
+                    </path>
+                </svg>
+                <span>JUSTIFICATIFS</span>
+            </a>
+            <a href="{{ path('admin_export') }}"
+                class="flex items-center space-x-4 px-4 py-3 rounded-lg transition-colors {{ current_route starts with 'admin_export' ? 'text-slate-900 font-bold bg-slate-100' : 'text-slate-500 font-semibold hover:bg-slate-50' }}">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4">
+                    </path>
+                </svg>
+                <span>EXPORT CSV</span>
+            </a>
         </nav>
 
     </aside>
 
     {# --- HEADER ADMIN FLUIDE --- #}
     <header
-        class="bg-white px-4 sm:px-6 py-4 flex justify-between items-center sticky top-0 z-30 border-b border-slate-200">
-        <button id="btn-burger" class="text-slate-800 hover:text-black relative">
+        class="bg-white px-4 sm:px-6 lg:pl-80 py-4 flex justify-between items-center sticky top-0 z-30 border-b border-slate-200">
+        <button id="btn-burger" class="text-slate-800 hover:text-black relative lg:hidden">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6h16M4 12h16M4 18h16">
                 </path>
@@ -74,7 +110,7 @@
         </a>
     </header>
 
-    <main class="flex-grow p-4 sm:p-6 flex flex-col relative pb-32">
+    <main class="flex-grow p-4 sm:p-6 lg:p-8 lg:pl-80 flex flex-col relative pb-32 lg:pb-8">
 
         {# Flashes #}
         <div class="w-full max-w-sm mx-auto mb-6 space-y-2">
@@ -94,8 +130,8 @@
 
     </main>
 
-    {# --- BOTTOM NAV ADMIN --- #}
-    <nav class="fixed bottom-0 w-full bg-white border-t border-slate-200 flex justify-around py-3 px-2 z-50">
+    {# --- BOTTOM NAV ADMIN (mobile uniquement, la sidebar prend le relais sur desktop) --- #}
+    <nav class="fixed bottom-0 w-full bg-white border-t border-slate-200 flex justify-around py-3 px-2 z-50 lg:hidden">
         <a href="{{ path('app_admin_dashboard') }}"
             class="flex flex-col items-center transition-colors {{ current_route starts with 'app_admin_dashboard' ? 'text-slate-900' : 'text-slate-400 hover:text-slate-900' }}">
             <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Enum\EmargementStatut;
 use App\Repository\EmargementRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -15,8 +16,8 @@ class Emargement
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $statut = null;
+    #[ORM\Column(length: 255, enumType: EmargementStatut::class)]
+    private ?EmargementStatut $statut = null;
 
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $heureSignature = null;
@@ -45,33 +46,12 @@ class Emargement
         return $this->id;
     }
 
-    public function getStatut(): ?string
+    public function getStatut(): ?EmargementStatut
     {
-        if ($this->statut !== 'EN_ATTENTE') {
-            return $this->statut;
-        }
-
-        $session = $this->getSession();
-        
-        if ($session && $session->getDateCours() && $session->getHeureFin()) {
-            $now = new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris'));
-            
-            // Reconstitution de la limite fatidique : Date du cours + Heure de fin
-            $dateStr = $session->getDateCours()->format('Y-m-d');
-            $heureFinStr = $session->getHeureFin()->format('H:i:s');
-            
-            $finDuCours = new \DateTimeImmutable($dateStr . ' ' . $heureFinStr, new \DateTimeZone('Europe/Paris'));
-
-            // Si l'heure actuelle a strictement dépassé la fin du cours, le retardataire devient un absent
-            if ($now > $finDuCours) {
-                return 'ABSENT';
-            }
-        }
-
         return $this->statut;
     }
 
-    public function setStatut(string $statut): static
+    public function setStatut(EmargementStatut $statut): static
     {
         $this->statut = $statut;
 
@@ -112,34 +92,6 @@ class Emargement
         $this->session = $session;
 
         return $this;
-    }
-
-    /**
-     * Marque la présence de l'étudiant et déduit automatiquement s'il est en retard
-     */
-    public function marquerPresence(): void
-    {
-        $now = new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris'));
-        $this->heureSignature = $now;
-
-        $session = $this->getSession();
-        if (!$session || !$session->getHeureDebut()) {
-            return;
-        }
-
-        $heureDebut = $session->getHeureDebut();
-        $tolerance = $session->getToleranceRetard() ?? 15; // 15 minute par défaut si null
-        
-        $limiteAcceptable = $heureDebut->modify("+$tolerance minutes");
-
-        $heureScanStr = $now->format('H:i:s');
-        $limiteStr = $limiteAcceptable->format('H:i:s');
-
-        if ($heureScanStr <= $limiteStr) {
-            $this->statut = 'PRESENT';
-        } else {
-            $this->statut = 'RETARD';
-        }
     }
 
     /**

@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Enum\JustificatifStatut;
 use App\Repository\JustificatifRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
@@ -17,8 +18,8 @@ class Justificatif
     #[ORM\Column(length: 255)]
     private ?string $urlFichier = null;
 
-    #[ORM\Column(length: 50)]
-    private ?string $statut = null;
+    #[ORM\Column(length: 50, enumType: JustificatifStatut::class)]
+    private ?JustificatifStatut $statut = null;
 
     #[ORM\Column(type: Types::DATE_IMMUTABLE)]
     private ?\DateTimeImmutable $dateSoumission = null;
@@ -50,12 +51,12 @@ class Justificatif
         return $this;
     }
 
-    public function getStatut(): ?string
+    public function getStatut(): ?JustificatifStatut
     {
         return $this->statut;
     }
 
-    public function setStatut(string $statut): static
+    public function setStatut(JustificatifStatut $statut): static
     {
         $this->statut = $statut;
 
