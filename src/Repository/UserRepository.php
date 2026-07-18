@@ -2,6 +2,7 @@
 
 namespace App\Repository;
 
+use App\Entity\Classe;
 use App\Entity\User;
 use App\Enum\Role;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -50,17 +51,17 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
 
             if ($filter === 'formateurs') {
                 $qb->andWhere('CAST_AS_TEXT(u.roles) LIKE :role')
-                   ->setParameter('role', '%"ROLE_FORMATEUR"%');
+                    ->setParameter('role', '%"ROLE_FORMATEUR"%');
             } elseif ($filter === 'apprenants') {
                 $qb->andWhere('CAST_AS_TEXT(u.roles) LIKE :role')
-                   ->setParameter('role', '%"ROLE_ETUDIANT"%');
+                    ->setParameter('role', '%"ROLE_ETUDIANT"%');
             }
         }
 
         // Gestion de la recherche textuelle
         if ($searchTerm) {
             $qb->andWhere('(LOWER(u.nom) LIKE LOWER(:search) OR LOWER(u.email) LIKE LOWER(:search) OR LOWER(u.prenom) LIKE LOWER(:search))')
-               ->setParameter('search', '%' . $searchTerm . '%');
+                ->setParameter('search', '%' . $searchTerm . '%');
         }
 
         $qb->setMaxResults($limit);
@@ -69,21 +70,24 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     }
 
     /**
-     * Récupère les étudiants actifs qui ne sont PAS encore dans la classe donnée.
+     * Étudiants n'appartenant pas à la classe, filtrables par nom/prénom/email.
+     *
+     * @return User[]
      */
-    public function findAvailableForClasse(int $classeId, ?string $searchTerm = null): array
+    public function findEtudiantsDisponiblesPourClasse(Classe $classe, string $search = ''): array
     {
         $qb = $this->createQueryBuilder('u')
-            ->andWhere('CAST_AS_TEXT(u.roles) LIKE :role')
             ->andWhere('u.isArchived = false')
+            ->andWhere('CAST_AS_TEXT(u.roles) LIKE :role')
             ->setParameter('role', '%"ROLE_ETUDIANT"%')
-            ->andWhere(':classeId NOT MEMBER OF u.classes')
-            ->setParameter('classeId', $classeId)
-            ->orderBy('u.nom', 'ASC');
+            ->andWhere(':classe NOT MEMBER OF u.classes')
+            ->setParameter('classe', $classe)
+            ->orderBy('u.nom', 'ASC')
+            ->addOrderBy('u.prenom', 'ASC');
 
-        if ($searchTerm) {
-            $qb->andWhere('(LOWER(u.nom) LIKE LOWER(:search) OR LOWER(u.prenom) LIKE LOWER(:search) OR LOWER(u.email) LIKE LOWER(:search))')
-               ->setParameter('search', '%' . $searchTerm . '%');
+        if ($search !== '') {
+            $qb->andWhere('LOWER(u.nom) LIKE :search OR LOWER(u.prenom) LIKE :search OR LOWER(u.email) LIKE :search')
+                ->setParameter('search', '%' . mb_strtolower($search) . '%');
         }
 
         return $qb->getQuery()->getResult();
@@ -117,7 +121,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             ->getQuery()
             ->getResult();
 
-        $filteredUsers = array_filter($allUsers, function($user) {
+        $filteredUsers = array_filter($allUsers, function ($user) {
             return !in_array('ROLE_ADMIN', $user->getRoles(), true);
         });
 
