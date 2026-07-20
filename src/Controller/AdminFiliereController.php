@@ -10,9 +10,12 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/filiere')]
-final class FiliereController extends AbstractController
+#[IsGranted('ROLE_ADMIN')]
+
+final class AdminFiliereController extends AbstractController
 {
     #[Route(name: 'app_filiere_index', methods: ['GET'])]
     public function index(Request $request, FiliereRepository $filiereRepository): Response
