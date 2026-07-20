@@ -78,7 +78,7 @@
         {% set infoText = firstClasse ? firstClasse.nom : 'Sans affectation' %}
         {% endif %}
 
-        <div
+        <a href="{{ path('app_admin_user_edit', {'id': user.id}) }}"
             class="flex items-center justify-between p-4 border border-gray-200 rounded-xl bg-white shadow-sm hover:shadow-md hover:border-gray-300 transition-all cursor-pointer group">
 
             <div class="flex items-center space-x-4 min-w-0 w-full">
@@ -100,7 +100,7 @@
                 stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
             </svg>
-        </div>
+        </a>
 
         {% else %}
         <div
