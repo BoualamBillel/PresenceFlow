@@ -22,7 +22,6 @@ class EtudiantProfilController extends AbstractController
         /** @var User $user */
         $user = $this->getUser();
 
-        // --- 1. GESTION DU FORMULAIRE EMAIL ---
         $formEmail = $this->createForm(UpdateEmailType::class, $user);
         $formEmail->handleRequest($request);
 
@@ -32,7 +31,6 @@ class EtudiantProfilController extends AbstractController
             return $this->redirectToRoute('app_etudiant_profil');
         }
 
-        // --- 2. GESTION DU FORMULAIRE MOT DE PASSE ---
         $formPassword = $this->createForm(UpdatePasswordType::class);
         $formPassword->handleRequest($request);
 
@@ -44,7 +42,6 @@ class EtudiantProfilController extends AbstractController
             return $this->redirectToRoute('app_etudiant_profil');
         }
 
-        // --- 3. RENDU DE LA VUE ---
         return $this->render('etudiant/profil.html.twig', [
             'formEmail' => $formEmail->createView(),
             'formPassword' => $formPassword->createView(),
