@@ -1,0 +1,21 @@
+{% extends 'bundles/TwigBundle/Exception/error.html.twig' %}
+
+{% block code %}403{% endblock %}
+
+{% block error_title %}Accès refusé
+{% endblock %}
+
+{% block error_message %}Vous n'avez pas les droits nécessaires pour accéder à cette page. Si vous pensez qu'il s'agit d'une erreur, contactez l'administration.
+{% endblock %}
+
+{% block error_icon %}
+	<svg class="w-8 h-8" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+		<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+	</svg>
+{% endblock %}
+
+{% block extra_actions %}
+	<a href="{{ path('app_logout') }}" class="block w-full mt-3 border border-black bg-white text-black hover:bg-slate-50 font-bold py-4 rounded-lg text-xs uppercase tracking-widest transition-colors">
+		Se connecter avec un autre compte
+	</a>
+{% endblock %}
