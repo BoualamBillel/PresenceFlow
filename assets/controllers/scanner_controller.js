@@ -25,7 +25,6 @@ export default class extends Controller {
             );
         } catch (err) {
             console.error("Impossible d'accéder à la caméra : ", err);
-            // Ici, tu pourrais afficher un message d'erreur custom si l'étudiant refuse les droits
         }
     }
 
