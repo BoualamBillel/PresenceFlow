@@ -1,495 +1,621 @@
 {% extends 'formateur_base.html.twig' %}
 
 {% block title %}
-    {% if session %}Session - {{ session.matiere.nom }}{% else %}Dashboard Formateur{% endif %}
+{% if session %}Session - {{ session.matiere.nom }}{% else %}Dashboard Formateur{% endif %}
 {% endblock %}
 
 {% block page_title %}Vue d'ensemble{% endblock %}
 
 {% block body %}
-    <main class="flex-grow p-4 lg:p-10 lg:max-w-5xl lg:mx-auto lg:w-full">
-        
-        {# ========================================================= #}
-        {# ÉTAT 0 : AUCUN COURS AUJOURD'HUI                          #}
-        {# ========================================================= #}
-        {% if session is null %}
-            <div class="h-full flex flex-col items-center justify-center mt-32 space-y-4 px-6 text-center">
-                <div class="w-16 h-16 bg-white text-black border border-black rounded-lg flex items-center justify-center shadow-sm">
-                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
-                </div>
-                <h2 class="text-xl font-black text-black uppercase tracking-wide">Aucun cours actif</h2>
-                <p class="text-xs text-slate-500 max-w-xs leading-relaxed font-medium">
-                    Vous n'avez aucune session de cours planifiée ou restante pour cette journée.
-                </p>
-            </div>
-            
+<main class="flex-grow p-4 lg:p-10 lg:max-w-5xl lg:mx-auto lg:w-full">
+
+    {# ========================================================= #}
+    {# ÉTAT 0 : AUCUN COURS AUJOURD'HUI #}
+    {# ========================================================= #}
+    {% if session is null %}
+    <div class="h-full flex flex-col items-center justify-center mt-32 space-y-4 px-6 text-center">
+        <div
+            class="w-16 h-16 bg-white text-black border border-black rounded-lg flex items-center justify-center shadow-sm">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2">
+                </path>
+            </svg>
+        </div>
+        <h2 class="text-xl font-black text-black uppercase tracking-wide">Aucun cours actif</h2>
+        <p class="text-xs text-slate-500 max-w-xs leading-relaxed font-medium">
+            Vous n'avez aucune session de cours planifiée ou restante pour cette journée.
+        </p>
+    </div>
+
+    {% else %}
+    {# ========================================================= #}
+    {# ÉTAT 1 : COURS INACTIF (Avant le lancement) #}
+    {# ========================================================= #}
+    {% if session.emargements is empty %}
+    <div class="h-full flex flex-col items-center justify-center mt-32 space-y-4">
+
+        {% set frMonths = {'Jan': 'janv.', 'Feb': 'févr.', 'Mar': 'mars', 'Apr': 'avr.', 'May': 'mai', 'Jun': 'juin',
+        'Jul': 'juil.', 'Aug': 'août', 'Sep': 'sept.', 'Oct': 'oct.', 'Nov': 'nov.', 'Dec': 'déc.'} %}
+        {% set monthLabel = frMonths[session.dateCours|date('M')]|default(session.dateCours|date('M')) %}
+
+        <p class="text-sm font-bold text-black text-center">
+            Votre prochain cours commence le {{ session.dateCours|date('d') }} {{ monthLabel }} à {{
+            session.heureDebut|date('H:i') }} :
+        </p>
+        <h2 class="text-2xl font-black text-center text-black">{{ session.matiere.nom }}</h2>
+        <p class="text-xs text-slate-500 uppercase tracking-wider">{{ session.classe.nom }}</p>
+
+        <span
+            class="inline-flex items-center px-3 py-1 rounded-full border border-slate-300 text-[10px] font-bold uppercase tracking-wider text-slate-600 mt-2">
+            <span class="w-2 h-2 rounded-full bg-red-500 mr-2"></span>
+            Session Inactive
+        </span>
+
+        {% if is_startable %}
+        <form method="post" action="{{ path('app_formateur_session_start', {'id': session.id}) }}"
+            class="w-full max-w-sm mt-12">
+            <input type="hidden" name="_token" value="{{ csrf_token('start' ~ session.id) }}">
+            <button type="submit"
+                class="w-full bg-black hover:bg-slate-800 text-white font-bold py-4 rounded-none text-xs uppercase tracking-widest transition-colors flex items-center justify-center space-x-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z">
+                    </path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span>Lancer la session</span>
+            </button>
+        </form>
         {% else %}
-            {# ========================================================= #}
-            {# ÉTAT 1 : COURS INACTIF (Avant le lancement)               #}
-            {# ========================================================= #}
-            {% if session.emargements is empty %}
-                <div class="h-full flex flex-col items-center justify-center mt-32 space-y-4">
-                    
-                    {% set frMonths = {'Jan': 'janv.', 'Feb': 'févr.', 'Mar': 'mars', 'Apr': 'avr.', 'May': 'mai', 'Jun': 'juin', 'Jul': 'juil.', 'Aug': 'août', 'Sep': 'sept.', 'Oct': 'oct.', 'Nov': 'nov.', 'Dec': 'déc.'} %}
-                    {% set monthLabel = frMonths[session.dateCours|date('M')]|default(session.dateCours|date('M')) %}
+        <div class="w-full max-w-sm mt-12 bg-slate-100 border border-slate-300 rounded-lg py-4 px-2 text-center">
+            <p
+                class="text-xs font-bold text-slate-500 uppercase tracking-widest flex justify-center items-center space-x-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
+                    </path>
+                </svg>
+                <span>Ouverture verrouillée</span>
+            </p>
+            <p class="text-[10px] text-slate-500 mt-2 font-medium">
+                L'émargement sera disponible 15 minutes avant le début du cours.
+            </p>
+        </div>
+        {% endif %}
+    </div>
 
-                    <p class="text-sm font-bold text-black text-center">
-                        Votre prochain cours commence le {{ session.dateCours|date('d') }} {{ monthLabel }} à {{ session.heureDebut|date('H:i') }} :
-                    </p>
-                    <h2 class="text-2xl font-black text-center text-black">{{ session.matiere.nom }}</h2>
-                    <p class="text-xs text-slate-500 uppercase tracking-wider">{{ session.classe.nom }}</p>
-                    
-                    <span class="inline-flex items-center px-3 py-1 rounded-full border border-slate-300 text-[10px] font-bold uppercase tracking-wider text-slate-600 mt-2">
-                        <span class="w-2 h-2 rounded-full bg-red-500 mr-2"></span>
-                        Session Inactive
-                    </span>
+    {# ========================================================= #}
+    {# ÉTAT 2 & 3 & 4 : COURS ACTIF, QR EXPIRÉ OU CLÔTURÉ #}
+    {# ========================================================= #}
+    {% else %}
+    {% set is_expired = qr_code_uri is null and session.qrCodeToken is not null %}
+    {% set is_closed = session.qrCodeToken is null %}
 
-                    {% if is_startable %}
-                        <form method="post" action="{{ path('app_formateur_session_start', {'id': session.id}) }}" class="w-full max-w-sm mt-12">
-                            <input type="hidden" name="_token" value="{{ csrf_token('start' ~ session.id) }}">
-                            <button type="submit" class="w-full bg-black hover:bg-slate-800 text-white font-bold py-4 rounded-none text-xs uppercase tracking-widest transition-colors flex items-center justify-center space-x-2">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                <span>Lancer la session</span>
+    <div class="text-center mb-6 lg:mb-10">
+        <h2 class="text-2xl font-black text-black">{{ session.classe.nom }}</h2>
+        <p class="text-xs text-slate-500 uppercase tracking-wider">{{ session.matiere.nom }}</p>
+
+        {% if qr_code_uri %}
+        <span
+            class="inline-flex items-center px-3 py-1 rounded-full border border-green-300 text-[10px] font-bold uppercase tracking-wider text-green-700 mt-2 bg-green-50">
+            <span class="w-2 h-2 rounded-full bg-green-500 mr-2"></span>
+            Session Active
+        </span>
+        {% elseif is_expired %}
+        <span
+            class="inline-flex items-center px-3 py-1 rounded-full border border-orange-300 text-[10px] font-bold uppercase tracking-wider text-orange-700 mt-2 bg-orange-50">
+            <span class="w-2 h-2 rounded-full bg-orange-400 mr-2"></span>
+            QR expiré
+        </span>
+        {% else %}
+        <span
+            class="inline-flex items-center px-3 py-1 rounded-full border border-slate-300 text-[10px] font-bold uppercase tracking-wider text-slate-700 mt-2 bg-slate-100">
+            <span class="w-2 h-2 rounded-full bg-slate-500 mr-2"></span>
+            Session Clôturée
+        </span>
+        {% endif %}
+    </div>
+
+    <div class="lg:grid lg:grid-cols-2 lg:gap-10 lg:items-start">
+        <div>
+
+            {% if qr_code_uri %}
+            {# --- LE QR CODE (Session active) --- #}
+            <div class="bg-white border border-black rounded-lg p-4 mb-8">
+                <img src="{{ qr_code_uri }}" alt="QR Code d'émargement"
+                    class="w-full max-w-[300px] mx-auto mb-4 border-4 border-black">
+
+                <div class="text-center font-bold text-sm mb-4 flex items-center justify-center space-x-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <span>Valide pendant <span id="countdown" class="text-black font-black"
+                            data-time="{{ time_left }}">00:00</span></span>
+                </div>
+
+                <div class="space-y-2">
+                    <form id="refresh-qr-form" method="post"
+                        action="{{ path('app_formateur_session_refresh_qr', {'id': session.id}) }}"
+                        onsubmit="return refreshQrCode(event)">
+                        <input type="hidden" name="_token" value="{{ csrf_token('refresh' ~ session.id) }}">
+                        <button type="submit"
+                            class="w-full bg-black hover:bg-slate-800 text-white font-bold py-3 text-xs uppercase tracking-widest flex items-center justify-center space-x-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
+                                </path>
+                            </svg>
+                            <span>Régénérer le code</span>
+                        </button>
+                    </form>
+                    <button type="button" onclick="shareQrCode()"
+                        class="w-full bg-black hover:bg-slate-800 text-white font-bold py-3 text-xs uppercase tracking-widest flex items-center justify-center space-x-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                        </svg>
+                        <span>Partager</span>
+                    </button>
+                </div>
+            </div>
+
+            {# --- CLÔTURE DE LA SESSION --- #}
+            <div class="mb-8">
+                <button type="button" id="open-close-modal"
+                    class="w-full border border-red-300 rounded-lg bg-white text-red-600 hover:bg-red-50 font-bold py-3 text-xs uppercase tracking-widest transition-colors">
+                    Clôturer la session
+                </button>
+
+                {# Modale de confirmation #}
+                <div id="close-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+                    {# Backdrop #}
+                    <div id="close-modal-backdrop" class="absolute inset-0 bg-black/50"></div>
+
+                    {# Boîte de dialogue #}
+                    <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 border border-gray-200">
+                        <h2 class="text-sm font-black text-black uppercase tracking-widest mb-3">
+                            Clôturer la session ?
+                        </h2>
+                        <p class="text-xs text-gray-600 leading-relaxed mb-2">
+                            Cette action est <span class="font-bold text-red-600">définitive</span> :
+                        </p>
+                        <ul class="text-xs text-gray-600 leading-relaxed mb-6 list-disc list-inside space-y-1">
+                            <li>Le QR code sera immédiatement invalidé</li>
+                            <li>Les fiches restées « en attente » passeront en « absent »</li>
+                            <li>Les statuts seront figés</li>
+                        </ul>
+
+                        <div class="flex gap-3">
+                            <button type="button" id="cancel-close-modal"
+                                class="flex-1 border border-gray-300 rounded-lg bg-white text-gray-700 hover:bg-gray-50 font-bold py-2.5 text-xs uppercase tracking-widest transition-colors">
+                                Annuler
                             </button>
-                        </form>
-                    {% else %}
-                        <div class="w-full max-w-sm mt-12 bg-slate-100 border border-slate-300 rounded-lg py-4 px-2 text-center">
-                            <p class="text-xs font-bold text-slate-500 uppercase tracking-widest flex justify-center items-center space-x-2">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
-                                <span>Ouverture verrouillée</span>
-                            </p>
-                            <p class="text-[10px] text-slate-500 mt-2 font-medium">
-                                L'émargement sera disponible 15 minutes avant le début du cours.
-                            </p>
-                        </div>
-                    {% endif %}
-                </div>
-
-            {# ========================================================= #}
-            {# ÉTAT 2 & 3 & 4 : COURS ACTIF, QR EXPIRÉ OU CLÔTURÉ        #}
-            {# ========================================================= #}
-            {% else %}
-                {% set is_expired = qr_code_uri is null and session.qrCodeToken is not null %}
-                {% set is_closed = session.qrCodeToken is null %}
-
-                <div class="text-center mb-6 lg:mb-10">
-                    <h2 class="text-2xl font-black text-black">{{ session.classe.nom }}</h2>
-                    <p class="text-xs text-slate-500 uppercase tracking-wider">{{ session.matiere.nom }}</p>
-                    
-                    {% if qr_code_uri %}
-                        <span class="inline-flex items-center px-3 py-1 rounded-full border border-green-300 text-[10px] font-bold uppercase tracking-wider text-green-700 mt-2 bg-green-50">
-                            <span class="w-2 h-2 rounded-full bg-green-500 mr-2"></span>
-                            Session Active
-                        </span>
-                    {% elseif is_expired %}
-                        <span class="inline-flex items-center px-3 py-1 rounded-full border border-orange-300 text-[10px] font-bold uppercase tracking-wider text-orange-700 mt-2 bg-orange-50">
-                            <span class="w-2 h-2 rounded-full bg-orange-400 mr-2"></span>
-                            QR expiré
-                        </span>
-                    {% else %}
-                        <span class="inline-flex items-center px-3 py-1 rounded-full border border-slate-300 text-[10px] font-bold uppercase tracking-wider text-slate-700 mt-2 bg-slate-100">
-                            <span class="w-2 h-2 rounded-full bg-slate-500 mr-2"></span>
-                            Session Clôturée
-                        </span>
-                    {% endif %}
-                </div>
-
-                <div class="lg:grid lg:grid-cols-2 lg:gap-10 lg:items-start">
-                <div>
-
-                {% if qr_code_uri %}
-                    {# --- LE QR CODE (Session active) --- #}
-                    <div class="bg-white border border-black rounded-lg p-4 mb-8">
-                        <img src="{{ qr_code_uri }}" alt="QR Code d'émargement" class="w-full max-w-[300px] mx-auto mb-4 border-4 border-black">
-                        
-                        <div class="text-center font-bold text-sm mb-4 flex items-center justify-center space-x-2">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                            <span>Valide pendant <span id="countdown" class="text-black font-black" data-time="{{ time_left }}">00:00</span></span>
-                        </div>
-
-                        <div class="space-y-2">
-                            <form id="refresh-qr-form" method="post" action="{{ path('app_formateur_session_refresh_qr', {'id': session.id}) }}" onsubmit="return refreshQrCode(event)">
-                                <input type="hidden" name="_token" value="{{ csrf_token('refresh' ~ session.id) }}">
-                                <button type="submit" class="w-full bg-black hover:bg-slate-800 text-white font-bold py-3 text-xs uppercase tracking-widest flex items-center justify-center space-x-2">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                                    <span>Régénérer le code</span>
+                            <form method="post" action="{{ path('app_formateur_session_close', {'id': session.id}) }}"
+                                class="flex-1">
+                                <input type="hidden" name="_token" value="{{ csrf_token('close' ~ session.id) }}">
+                                <button type="submit"
+                                    class="w-full border border-red-600 rounded-lg bg-red-600 text-white hover:bg-red-700 font-bold py-2.5 text-xs uppercase tracking-widest transition-colors">
+                                    Confirmer
                                 </button>
                             </form>
-                            <button type="button" onclick="shareQrCode()" class="w-full bg-black hover:bg-slate-800 text-white font-bold py-3 text-xs uppercase tracking-widest flex items-center justify-center space-x-2">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
-                                <span>Partager</span>
-                            </button>
                         </div>
                     </div>
+                </div>
+            </div>
 
-                    {# --- CLÔTURE DE LA SESSION --- #}
-                    <form method="post" action="{{ path('app_formateur_session_close', {'id': session.id}) }}" class="mb-8"
-                          onsubmit="return confirm('Clôturer définitivement la session ? Les fiches d\'absence seront figées.');">
+            {% elseif is_expired %}
+            {# --- QR EXPIRÉ : régénération ou clôture encore possibles --- #}
+            <div class="bg-white border border-black rounded-lg p-8 mb-8 text-center">
+                <div
+                    class="w-12 h-12 rounded-full bg-orange-50 flex items-center justify-center mx-auto mb-3 border border-black">
+                    <svg class="w-6 h-6 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <p class="text-sm font-black uppercase tracking-wider text-black">QR code expiré</p>
+                <p class="text-[10px] text-slate-500 mt-2 mb-6 font-bold uppercase tracking-widest">Les étudiants ne
+                    peuvent plus scanner.<br>Régénérez un code ou clôturez la session.</p>
+
+                <div class="space-y-2">
+                    <form id="refresh-qr-form" method="post"
+                        action="{{ path('app_formateur_session_refresh_qr', {'id': session.id}) }}"
+                        onsubmit="return refreshQrCode(event)">
+                        <input type="hidden" name="_token" value="{{ csrf_token('refresh' ~ session.id) }}">
+                        <button type="submit"
+                            class="w-full bg-black hover:bg-slate-800 text-white font-bold py-3 text-xs uppercase tracking-widest flex items-center justify-center space-x-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
+                                </path>
+                            </svg>
+                            <span>Régénérer le code</span>
+                        </button>
+                    </form>
+                    <form method="post" action="{{ path('app_formateur_session_close', {'id': session.id}) }}"
+                        onsubmit="return confirm('Clôturer définitivement la session ? Les fiches d\'absence seront figées.');">
                         <input type="hidden" name="_token" value="{{ csrf_token('close' ~ session.id) }}">
-                        <button type="submit" class="w-full border border-red-300 rounded-lg bg-white text-red-600 hover:bg-red-50 font-bold py-3 text-xs uppercase tracking-widest transition-colors">
+                        <button type="submit"
+                            class="w-full border border-red-300 rounded-lg bg-white text-red-600 hover:bg-red-50 font-bold py-3 text-xs uppercase tracking-widest transition-colors">
                             Clôturer la session
                         </button>
                     </form>
-
-                {% elseif is_expired %}
-                    {# --- QR EXPIRÉ : régénération ou clôture encore possibles --- #}
-                    <div class="bg-white border border-black rounded-lg p-8 mb-8 text-center">
-                        <div class="w-12 h-12 rounded-full bg-orange-50 flex items-center justify-center mx-auto mb-3 border border-black">
-                            <svg class="w-6 h-6 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                        </div>
-                        <p class="text-sm font-black uppercase tracking-wider text-black">QR code expiré</p>
-                        <p class="text-[10px] text-slate-500 mt-2 mb-6 font-bold uppercase tracking-widest">Les étudiants ne peuvent plus scanner.<br>Régénérez un code ou clôturez la session.</p>
-
-                        <div class="space-y-2">
-                            <form id="refresh-qr-form" method="post" action="{{ path('app_formateur_session_refresh_qr', {'id': session.id}) }}" onsubmit="return refreshQrCode(event)">
-                                <input type="hidden" name="_token" value="{{ csrf_token('refresh' ~ session.id) }}">
-                                <button type="submit" class="w-full bg-black hover:bg-slate-800 text-white font-bold py-3 text-xs uppercase tracking-widest flex items-center justify-center space-x-2">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                                    <span>Régénérer le code</span>
-                                </button>
-                            </form>
-                            <form method="post" action="{{ path('app_formateur_session_close', {'id': session.id}) }}"
-                                  onsubmit="return confirm('Clôturer définitivement la session ? Les fiches d\'absence seront figées.');">
-                                <input type="hidden" name="_token" value="{{ csrf_token('close' ~ session.id) }}">
-                                <button type="submit" class="w-full border border-red-300 rounded-lg bg-white text-red-600 hover:bg-red-50 font-bold py-3 text-xs uppercase tracking-widest transition-colors">
-                                    Clôturer la session
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-
-                {% else %}
-                    {# --- L'INTERFACE CLÔTURÉE --- #}
-                    <div class="bg-white border border-black rounded-lg p-8 mb-8 text-center">
-                        <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-3 border border-black">
-                            <svg class="w-6 h-6 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
-                            </svg>
-                        </div>
-                        <p class="text-sm font-black uppercase tracking-wider text-black">Émargement verrouillé</p>
-                        <p class="text-[10px] text-slate-500 mt-2 font-bold uppercase tracking-widest">Le registre des présences est définitivement clos.</p>
-                    </div>
-                {% endif %}
-
-                {# --- JAUGE DE PRÉSENCE --- #}
-                {% set totalEtudiants = session.emargements|length %}
-                {% set nbPresents = session.emargements|filter(e => e.statut in [constant('App\\Enum\\EmargementStatut::PRESENT'), constant('App\\Enum\\EmargementStatut::RETARD')])|length %}
-                {% set pourcentage = totalEtudiants > 0 ? (nbPresents / totalEtudiants) * 100 : 0 %}
-
-                <div class="mb-8 lg:mb-0">
-                    <p class="text-[10px] font-bold text-center uppercase tracking-wider mb-2">Présence</p>
-                    <div class="w-full h-3 bg-white border border-black flex">
-                        <div class="h-full bg-black transition-all duration-500" style="width: {{ pourcentage }}%;"></div>
-                    </div>
-                    <p class="text-[10px] text-center text-slate-500 font-bold mt-1">{{ nbPresents }} / {{ totalEtudiants }} PRÉSENTS</p>
                 </div>
+            </div>
 
+            {% else %}
+            {# --- L'INTERFACE CLÔTURÉE --- #}
+            <div class="bg-white border border-black rounded-lg p-8 mb-8 text-center">
+                <div
+                    class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-3 border border-black">
+                    <svg class="w-6 h-6 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
+                        </path>
+                    </svg>
                 </div>
+                <p class="text-sm font-black uppercase tracking-wider text-black">Émargement verrouillé</p>
+                <p class="text-[10px] text-slate-500 mt-2 font-bold uppercase tracking-widest">Le registre des présences
+                    est définitivement clos.</p>
+            </div>
+            {% endif %}
 
-                {# --- LISTE DES ÉTUDIANTS --- #}
-                <div class="mb-4">
-                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider border-b border-slate-200 pb-2 mb-4 flex justify-between">
-                        <span>Liste des étudiants</span>
-                        <span>Total : {{ totalEtudiants }}</span>
-                    </h3>
-                    
-                    <div class="space-y-3">
-                        {% for emargement in session.emargements %}
-                        {% set etudiant = emargement.etudiant %}
-                        {% set statut = emargement_statut(emargement) %}
-                        {% set isAttente = statut == constant('App\\Enum\\EmargementStatut::EN_ATTENTE') %}
-                        {% set isPresent = statut == constant('App\\Enum\\EmargementStatut::PRESENT') %}
-                        {% set isRetard = statut == constant('App\\Enum\\EmargementStatut::RETARD') %}
-                        {% set isAbsent = statut == constant('App\\Enum\\EmargementStatut::ABSENT') %}
+            {# --- JAUGE DE PRÉSENCE --- #}
+            {% set totalEtudiants = session.emargements|length %}
+            {% set nbPresents = session.emargements|filter(e => e.statut in
+            [constant('App\\Enum\\EmargementStatut::PRESENT'), constant('App\\Enum\\EmargementStatut::RETARD')])|length
+            %}
+            {% set pourcentage = totalEtudiants > 0 ? (nbPresents / totalEtudiants) * 100 : 0 %}
 
-                        <div id="card-{{ emargement.id }}" onclick="openStatusModal({{ emargement.id }}, '{{ etudiant.prenom|escape('js') }}', '{{ etudiant.nom|escape('js') }}', '{{ statut.value }}', '{{ csrf_token('modifier' ~ emargement.id) }}')"
-                             class="flex items-center bg-white border rounded-lg {{ isAttente ? 'border-slate-200' : 'border-black' }} p-3 cursor-pointer hover:bg-slate-50 transition-colors">
-                            
-                            <div id="avatar-{{ emargement.id }}" class="w-8 h-8 rounded-full text-[10px] font-black flex items-center justify-center mr-3 border
+            <div class="mb-8 lg:mb-0">
+                <p class="text-[10px] font-bold text-center uppercase tracking-wider mb-2">Présence</p>
+                <div class="w-full h-3 bg-white border border-black flex">
+                    <div class="h-full bg-black transition-all duration-500" style="width: {{ pourcentage }}%;"></div>
+                </div>
+                <p class="text-[10px] text-center text-slate-500 font-bold mt-1">{{ nbPresents }} / {{ totalEtudiants }}
+                    PRÉSENTS</p>
+            </div>
+
+        </div>
+
+        {# --- LISTE DES ÉTUDIANTS --- #}
+        <div class="mb-4">
+            <h3
+                class="text-xs font-bold text-slate-400 uppercase tracking-wider border-b border-slate-200 pb-2 mb-4 flex justify-between">
+                <span>Liste des étudiants</span>
+                <span>Total : {{ totalEtudiants }}</span>
+            </h3>
+
+            <div class="space-y-3">
+                {% for emargement in session.emargements %}
+                {% set etudiant = emargement.etudiant %}
+                {% set statut = emargement_statut(emargement) %}
+                {% set isAttente = statut == constant('App\\Enum\\EmargementStatut::EN_ATTENTE') %}
+                {% set isPresent = statut == constant('App\\Enum\\EmargementStatut::PRESENT') %}
+                {% set isRetard = statut == constant('App\\Enum\\EmargementStatut::RETARD') %}
+                {% set isAbsent = statut == constant('App\\Enum\\EmargementStatut::ABSENT') %}
+
+                <div id="card-{{ emargement.id }}"
+                    onclick="openStatusModal({{ emargement.id }}, '{{ etudiant.prenom|escape('js') }}', '{{ etudiant.nom|escape('js') }}', '{{ statut.value }}', '{{ csrf_token('modifier' ~ emargement.id) }}')"
+                    class="flex items-center bg-white border rounded-lg {{ isAttente ? 'border-slate-200' : 'border-black' }} p-3 cursor-pointer hover:bg-slate-50 transition-colors">
+
+                    <div id="avatar-{{ emargement.id }}" class="w-8 h-8 rounded-full text-[10px] font-black flex items-center justify-center mr-3 border
                                 {{ isAttente ? 'bg-slate-100 border-slate-200 text-slate-400' }}
                                 {{ isPresent ? 'bg-green-50 border-black text-black' }}
                                 {{ isRetard ? 'bg-orange-50 border-black text-black' }}
                                 {{ isAbsent ? 'bg-red-50 border-black text-black' }}
                             ">
-                                {{ etudiant.prenom|first|upper }}{{ etudiant.nom|first|upper }}
-                            </div>
+                        {{ etudiant.prenom|first|upper }}{{ etudiant.nom|first|upper }}
+                    </div>
 
-                            <div class="flex-grow">
-                                <p id="name-{{ emargement.id }}" class="text-sm font-bold {{ isAttente ? 'text-slate-500' : 'text-black' }} leading-none">
-                                    {{ etudiant.prenom }} {{ etudiant.nom }}
-                                </p>
-                                
-                                <div id="status-{{ emargement.id }}">
-                                    {% if isPresent %}
-                                        <p class="text-[9px] font-black text-green-600 uppercase mt-1 tracking-wider">✔ Présent</p>
-                                    {% elseif isRetard %}
-                                        <p class="text-[9px] font-black text-orange-500 uppercase mt-1 tracking-wider">⏱ Retard ({{ emargement.heureSignature|date('H:i')|default('') }})</p>
-                                    {% elseif isAbsent %}
-                                        <p class="text-[9px] font-black text-red-500 uppercase mt-1 tracking-wider">❌ Absent</p>
-                                    {% else %}
-                                        <p class="text-[9px] font-black text-slate-400 uppercase mt-1 tracking-wider">? En attente</p>
-                                    {% endif %}
-                                </div>
-                            </div>
+                    <div class="flex-grow">
+                        <p id="name-{{ emargement.id }}"
+                            class="text-sm font-bold {{ isAttente ? 'text-slate-500' : 'text-black' }} leading-none">
+                            {{ etudiant.prenom }} {{ etudiant.nom }}
+                        </p>
+
+                        <div id="status-{{ emargement.id }}">
+                            {% if isPresent %}
+                            <p class="text-[9px] font-black text-green-600 uppercase mt-1 tracking-wider">✔ Présent</p>
+                            {% elseif isRetard %}
+                            <p class="text-[9px] font-black text-orange-500 uppercase mt-1 tracking-wider">⏱ Retard ({{
+                                emargement.heureSignature|date('H:i')|default('') }})</p>
+                            {% elseif isAbsent %}
+                            <p class="text-[9px] font-black text-red-500 uppercase mt-1 tracking-wider">❌ Absent</p>
+                            {% else %}
+                            <p class="text-[9px] font-black text-slate-400 uppercase mt-1 tracking-wider">? En attente
+                            </p>
+                            {% endif %}
                         </div>
-                    {% else %}
-                        <p class="text-xs text-slate-500 italic text-center py-4">Aucun étudiant rattaché à cette session.</p>
-                    {% endfor %}
                     </div>
                 </div>
+                {% else %}
+                <p class="text-xs text-slate-500 italic text-center py-4">Aucun étudiant rattaché à cette session.</p>
+                {% endfor %}
+            </div>
+        </div>
 
-                </div>
+    </div>
 
-            {% endif %}
-        {% endif %}
-    </main>
+    {% endif %}
+    {% endif %}
+</main>
 
-    <div id="status-modal" class="fixed inset-0 z-[60] hidden bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center transition-opacity opacity-0">
-        
-        <div id="status-modal-content" class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl p-6 sm:p-8 transform translate-y-full sm:translate-y-0 sm:scale-95 transition-transform duration-300 shadow-2xl relative">
-            
-            <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-6 sm:hidden"></div>
-            
-            <button type="button" onclick="closeStatusModal()" class="absolute top-6 right-6 text-slate-400 hover:text-black transition-colors">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-            </button>
+<div id="status-modal"
+    class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center transition-opacity opacity-0">
 
-            <h3 class="text-xl font-black text-black mb-6 border-b-4 border-black inline-block pb-1">Modifier le statut</h3>
+    <div id="status-modal-content"
+        class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl p-6 sm:p-8 transform translate-y-full sm:translate-y-0 sm:scale-95 transition-transform duration-300 shadow-2xl relative">
 
-            <div class="border border-slate-200 rounded-lg p-4 mb-6 bg-white flex items-center space-x-4">
-                <div id="modal-initials" class="w-10 h-10 rounded-full bg-slate-100 border border-slate-200 text-slate-800 text-[11px] font-black flex items-center justify-center shrink-0"></div>
-                <div>
-                    <p id="modal-name" class="font-bold text-black text-base leading-none"></p>
-                    <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mt-1.5">Actuellement : <span id="modal-current-status" class="text-black"></span></p>
-                </div>
-                <div id="modal-color-indicator" class="w-3 h-3 rounded-full border border-black ml-auto bg-orange-400"></div>
+        <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-6 sm:hidden"></div>
+
+        <button type="button" onclick="closeStatusModal()"
+            class="absolute top-6 right-6 text-slate-400 hover:text-black transition-colors">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </button>
+
+        <h3 class="text-xl font-black text-black mb-6 border-b-4 border-black inline-block pb-1">Modifier le statut</h3>
+
+        <div class="border border-slate-200 rounded-lg p-4 mb-6 bg-white flex items-center space-x-4">
+            <div id="modal-initials"
+                class="w-10 h-10 rounded-full bg-slate-100 border border-slate-200 text-slate-800 text-[11px] font-black flex items-center justify-center shrink-0">
+            </div>
+            <div>
+                <p id="modal-name" class="font-bold text-black text-base leading-none"></p>
+                <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mt-1.5">Actuellement : <span
+                        id="modal-current-status" class="text-black"></span></p>
+            </div>
+            <div id="modal-color-indicator" class="w-3 h-3 rounded-full border border-black ml-auto bg-orange-400">
+            </div>
+        </div>
+
+        <form id="status-form" method="post" action="">
+            <input type="hidden" name="_token" id="modal-csrf" value="">
+
+            <div class="space-y-3 mb-8">
+                <label class="block cursor-pointer relative">
+                    <input type="radio" name="statut" value="PRESENT" class="peer sr-only">
+                    <div
+                        class="border border-slate-200 rounded-lg p-4 flex items-center justify-center peer-checked:border-green-500 transition-colors">
+                        <span class="absolute left-4 w-3 h-3 rounded-full border border-black bg-green-500"></span>
+                        <span class="text-xs font-bold text-green-500 uppercase tracking-widest">Présent</span>
+                    </div>
+                </label>
+
+                <label class="block cursor-pointer relative">
+                    <input type="radio" name="statut" value="RETARD" class="peer sr-only">
+                    <div
+                        class="border border-slate-200 rounded-lg p-4 flex items-center justify-center peer-checked:border-orange-500 transition-colors">
+                        <span class="absolute left-4 w-3 h-3 rounded-full border border-black bg-orange-400"></span>
+                        <span class="text-xs font-bold text-orange-400 uppercase tracking-widest">En Retard</span>
+                    </div>
+                </label>
+
+                <label class="block cursor-pointer relative">
+                    <input type="radio" name="statut" value="ABSENT" class="peer sr-only">
+                    <div
+                        class="border border-slate-200 rounded-lg p-4 flex items-center justify-center peer-checked:border-red-500 transition-colors">
+                        <span class="absolute left-4 w-3 h-3 rounded-full border border-black bg-red-500"></span>
+                        <span class="text-xs font-bold text-red-500 uppercase tracking-widest">Absent</span>
+                    </div>
+                </label>
             </div>
 
-            <form id="status-form" method="post" action="">
-                <input type="hidden" name="_token" id="modal-csrf" value="">
-                
-                <div class="space-y-3 mb-8">
-                    <label class="block cursor-pointer relative">
-                        <input type="radio" name="statut" value="PRESENT" class="peer sr-only">
-                        <div class="border border-slate-200 rounded-lg p-4 flex items-center justify-center peer-checked:border-green-500 transition-colors">
-                            <span class="absolute left-4 w-3 h-3 rounded-full border border-black bg-green-500"></span>
-                            <span class="text-xs font-bold text-green-500 uppercase tracking-widest">Présent</span>
-                        </div>
-                    </label>
-
-                    <label class="block cursor-pointer relative">
-                        <input type="radio" name="statut" value="RETARD" class="peer sr-only">
-                        <div class="border border-slate-200 rounded-lg p-4 flex items-center justify-center peer-checked:border-orange-500 transition-colors">
-                            <span class="absolute left-4 w-3 h-3 rounded-full border border-black bg-orange-400"></span>
-                            <span class="text-xs font-bold text-orange-400 uppercase tracking-widest">En Retard</span>
-                        </div>
-                    </label>
-
-                    <label class="block cursor-pointer relative">
-                        <input type="radio" name="statut" value="ABSENT" class="peer sr-only">
-                        <div class="border border-slate-200 rounded-lg p-4 flex items-center justify-center peer-checked:border-red-500 transition-colors">
-                            <span class="absolute left-4 w-3 h-3 rounded-full border border-black bg-red-500"></span>
-                            <span class="text-xs font-bold text-red-500 uppercase tracking-widest">Absent</span>
-                        </div>
-                    </label>
-                </div>
-
-                <button type="submit" class="w-full bg-black hover:bg-slate-800 text-white font-bold py-4 rounded-xl text-sm tracking-wider transition-colors">
-                    Confirmer la modification
-                </button>
-            </form>
-        </div>
+            <button type="submit"
+                class="w-full bg-black hover:bg-slate-800 text-white font-bold py-4 rounded-xl text-sm tracking-wider transition-colors">
+                Confirmer la modification
+            </button>
+        </form>
     </div>
+</div>
 {% endblock %}
 
 {% block javascripts %}
-    {% if session and session.emargements is not empty and session.qrCodeToken is not null %}
-    <script>
-        let timeLeft = 0;
-        let countdownTimer = null;
-        let shareUrl = {{ qr_target_url is defined and qr_target_url ? qr_target_url|json_encode|raw : 'null' }};
+{% if session and session.emargements is not empty and session.qrCodeToken is not null %}
+<script>
+    let timeLeft = 0;
+    let countdownTimer = null;
+    let shareUrl = {{ qr_target_url is defined and qr_target_url ?qr_target_url| json_encode | raw : 'null' }};
 
-        function startCountdown(seconds) {
-            const countdownElement = document.getElementById('countdown');
-            if (!countdownElement) return;
+    function startCountdown(seconds) {
+        const countdownElement = document.getElementById('countdown');
+        if (!countdownElement) return;
 
-            timeLeft = parseInt(seconds, 10);
-            clearInterval(countdownTimer);
+        timeLeft = parseInt(seconds, 10);
+        clearInterval(countdownTimer);
 
-            function updateDisplay() {
-                const minutes = Math.floor(timeLeft / 60);
-                const secs = timeLeft % 60;
-                countdownElement.textContent =
-                    String(minutes).padStart(2, '0') + ':' +
-                    String(secs).padStart(2, '0');
-            }
-
-            countdownTimer = setInterval(() => {
-                if (timeLeft <= 0) {
-                    clearInterval(countdownTimer);
-                    window.location.reload();
-                } else {
-                    timeLeft--;
-                    updateDisplay();
-                }
-            }, 1000);
-
-            updateDisplay();
+        function updateDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const secs = timeLeft % 60;
+            countdownElement.textContent =
+                String(minutes).padStart(2, '0') + ':' +
+                String(secs).padStart(2, '0');
         }
 
-        async function refreshQrCode(event) {
-            event.preventDefault();
-            const form = event.target;
+        countdownTimer = setInterval(() => {
+            if (timeLeft <= 0) {
+                clearInterval(countdownTimer);
+                window.location.reload();
+            } else {
+                timeLeft--;
+                updateDisplay();
+            }
+        }, 1000);
 
-            try {
-                const response = await fetch(form.action, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ _token: form.querySelector('[name=_token]').value })
-                });
-                if (!response.ok) return false;
+        updateDisplay();
+    }
 
-                const data = await response.json();
-                const img = document.querySelector('img[alt="QR Code d\'émargement"]');
+    async function refreshQrCode(event) {
+        event.preventDefault();
+        const form = event.target;
 
-                if (img) {
-                    img.src = data.qr_code_uri;
-                    if (data.qr_target_url) {
-                        shareUrl = data.qr_target_url;
-                    }
-                    startCountdown(data.time_left);
-                } else {
-                    window.location.reload();
+        try {
+            const response = await fetch(form.action, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ _token: form.querySelector('[name=_token]').value })
+            });
+            if (!response.ok) return false;
+
+            const data = await response.json();
+            const img = document.querySelector('img[alt="QR Code d\'émargement"]');
+
+            if (img) {
+                img.src = data.qr_code_uri;
+                if (data.qr_target_url) {
+                    shareUrl = data.qr_target_url;
                 }
-            } catch (e) {
+                startCountdown(data.time_left);
+            } else {
                 window.location.reload();
             }
-            return false;
+        } catch (e) {
+            window.location.reload();
         }
+        return false;
+    }
 
-        async function shareQrCode() {
-            if (shareUrl && navigator.share) {
-                try {
-                    await navigator.share({
-                        title: 'Émargement',
-                        text: 'Lien d\'émargement de la session :',
-                        url: shareUrl
-                    });
-                    return;
-                } catch (err) {
-                    if (err.name === 'AbortError') return;
-                }
-            }
-
+    async function shareQrCode() {
+        if (shareUrl && navigator.share) {
             try {
-                const file = await qrImageToPngFile();
-                if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
-                    await navigator.share({ files: [file], title: 'Émargement', text: 'QR code de la session' });
-                    return;
-                }
+                await navigator.share({
+                    title: 'Émargement',
+                    text: 'Lien d\'émargement de la session :',
+                    url: shareUrl
+                });
+                return;
             } catch (err) {
                 if (err.name === 'AbortError') return;
             }
+        }
 
+        try {
             const file = await qrImageToPngFile();
-            if (file) {
-                const url = URL.createObjectURL(file);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'qr-emargement.png';
-                a.click();
-                URL.revokeObjectURL(url);
+            if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
+                await navigator.share({ files: [file], title: 'Émargement', text: 'QR code de la session' });
+                return;
             }
+        } catch (err) {
+            if (err.name === 'AbortError') return;
         }
 
-        function qrImageToPngFile() {
-            return new Promise((resolve) => {
-                const imgElement = document.querySelector('img[alt="QR Code d\'émargement"]');
-                if (!imgElement) {
-                    resolve(null);
-                    return;
-                }
-                const image = new Image();
-                image.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    canvas.width = image.width || 300;
-                    canvas.height = image.height || 300;
-                    const ctx = canvas.getContext('2d');
-                    ctx.fillStyle = '#ffffff';
-                    ctx.fillRect(0, 0, canvas.width, canvas.height);
-                    ctx.drawImage(image, 0, 0);
-                    canvas.toBlob((blob) => {
-                        resolve(blob ? new File([blob], 'qr-emargement.png', { type: 'image/png' }) : null);
-                    }, 'image/png');
-                };
-                image.onerror = () => resolve(null);
-                image.src = imgElement.src;
-            });
+        const file = await qrImageToPngFile();
+        if (file) {
+            const url = URL.createObjectURL(file);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'qr-emargement.png';
+            a.click();
+            URL.revokeObjectURL(url);
         }
+    }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const countdownElement = document.getElementById('countdown');
-            if (countdownElement) {
-                startCountdown(countdownElement.getAttribute('data-time'));
+    function qrImageToPngFile() {
+        return new Promise((resolve) => {
+            const imgElement = document.querySelector('img[alt="QR Code d\'émargement"]');
+            if (!imgElement) {
+                resolve(null);
+                return;
             }
+            const image = new Image();
+            image.onload = () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = image.width || 300;
+                canvas.height = image.height || 300;
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(image, 0, 0);
+                canvas.toBlob((blob) => {
+                    resolve(blob ? new File([blob], 'qr-emargement.png', { type: 'image/png' }) : null);
+                }, 'image/png');
+            };
+            image.onerror = () => resolve(null);
+            image.src = imgElement.src;
         });
-    </script>
-    {% endif %}
+    }
 
-    <script>
-        function openStatusModal(emargementId, prenom, nom, currentStatus, csrfToken) {
-            const modal = document.getElementById('status-modal');
-            const content = document.getElementById('status-modal-content');
-            
-            document.getElementById('modal-name').textContent = prenom + ' ' + nom;
-            document.getElementById('modal-initials').textContent = prenom.charAt(0).toUpperCase() + nom.charAt(0).toUpperCase();
-            document.getElementById('modal-current-status').textContent = currentStatus.replace('_', ' ');
-            
-            const colorIndicator = document.getElementById('modal-color-indicator');
-            colorIndicator.className = 'w-3 h-3 rounded-full border border-black ml-auto ' + 
-                (currentStatus === 'PRESENT' ? 'bg-green-500' : 
-                 currentStatus === 'RETARD' ? 'bg-orange-400' : 
-                 currentStatus === 'ABSENT' ? 'bg-red-500' : 'bg-gray-200');
-
-            document.getElementById('status-form').action = '/formateur/emargement/' + emargementId + '/modifier';
-            document.getElementById('modal-csrf').value = csrfToken;
-
-            const radios = document.getElementsByName('statut');
-            radios.forEach(r => { 
-                r.checked = (r.value === currentStatus); 
-            });
-
-            modal.classList.remove('hidden');
-            setTimeout(() => {
-                modal.classList.remove('opacity-0');
-                if (window.innerWidth < 640) {
-                    content.classList.remove('translate-y-full');
-                } else {
-                    content.classList.remove('scale-95');
-                }
-            }, 10);
+    document.addEventListener('DOMContentLoaded', () => {
+        const countdownElement = document.getElementById('countdown');
+        if (countdownElement) {
+            startCountdown(countdownElement.getAttribute('data-time'));
         }
+    });
+</script>
+{% endif %}
 
-        function closeStatusModal() {
-            const modal = document.getElementById('status-modal');
-            const content = document.getElementById('status-modal-content');
-            
-            modal.classList.add('opacity-0');
+<script>
+    function openStatusModal(emargementId, prenom, nom, currentStatus, csrfToken) {
+        const modal = document.getElementById('status-modal');
+        const content = document.getElementById('status-modal-content');
+
+        document.getElementById('modal-name').textContent = prenom + ' ' + nom;
+        document.getElementById('modal-initials').textContent = prenom.charAt(0).toUpperCase() + nom.charAt(0).toUpperCase();
+        document.getElementById('modal-current-status').textContent = currentStatus.replace('_', ' ');
+
+        const colorIndicator = document.getElementById('modal-color-indicator');
+        colorIndicator.className = 'w-3 h-3 rounded-full border border-black ml-auto ' +
+            (currentStatus === 'PRESENT' ? 'bg-green-500' :
+                currentStatus === 'RETARD' ? 'bg-orange-400' :
+                    currentStatus === 'ABSENT' ? 'bg-red-500' : 'bg-gray-200');
+
+        document.getElementById('status-form').action = '/formateur/emargement/' + emargementId + '/modifier';
+        document.getElementById('modal-csrf').value = csrfToken;
+
+        const radios = document.getElementsByName('statut');
+        radios.forEach(r => {
+            r.checked = (r.value === currentStatus);
+        });
+
+        modal.classList.remove('hidden');
+        setTimeout(() => {
+            modal.classList.remove('opacity-0');
             if (window.innerWidth < 640) {
-                content.classList.add('translate-y-full');
+                content.classList.remove('translate-y-full');
             } else {
-                content.classList.add('scale-95');
+                content.classList.remove('scale-95');
             }
-            
-            setTimeout(() => {
-                modal.classList.add('hidden');
-            }, 300);
+        }, 10);
+    }
+
+    function closeStatusModal() {
+        const modal = document.getElementById('status-modal');
+        const content = document.getElementById('status-modal-content');
+
+        modal.classList.add('opacity-0');
+        if (window.innerWidth < 640) {
+            content.classList.add('translate-y-full');
+        } else {
+            content.classList.add('scale-95');
         }
 
-        document.getElementById('status-modal').addEventListener('click', function(e) {
-            if (e.target === this) closeStatusModal();
+        setTimeout(() => {
+            modal.classList.add('hidden');
+        }, 300);
+    }
+
+    document.getElementById('status-modal').addEventListener('click', function (e) {
+        if (e.target === this) closeStatusModal();
+    });
+</script>
+
+<script>
+    (() => {
+        const modal = document.getElementById('close-modal');
+        const open = () => modal.classList.remove('hidden');
+        const close = () => modal.classList.add('hidden');
+
+        document.getElementById('open-close-modal').addEventListener('click', open);
+        document.getElementById('cancel-close-modal').addEventListener('click', close);
+        document.getElementById('close-modal-backdrop').addEventListener('click', close);
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && !modal.classList.contains('hidden')) close();
         });
-    </script>
+    })();
+</script>
 {% endblock %}
