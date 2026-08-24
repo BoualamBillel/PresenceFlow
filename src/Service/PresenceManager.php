@@ -19,6 +19,9 @@ final class PresenceManager
 
     /**
      * Marque la présence de l'étudiant et déduit automatiquement s'il est en retard.
+     * Marks the student's presence and automatically determines if they are late.
+     * @param Emargement $emargement
+     * @return void
      */
     public function marquer(Emargement $emargement): void
     {

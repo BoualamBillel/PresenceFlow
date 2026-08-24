@@ -40,6 +40,17 @@ class EtudiantEmargementController extends AbstractController
         return $this->render('etudiant/scanner.html.twig');
     }
 
+    /**
+     * Marque la présence de l'étudiant pour la session correspondant au QR code.
+     * Marks the student's attendance for the session corresponding to the QR code.
+     * @param string $token
+     * @param SessionCoursRepository $sessionRepository
+     * @param EmargementRepository $emargementRepository
+     * @param QrCodeManager $qrCodeManager
+     * @param PresenceManager $presenceManager
+     * @param EntityManagerInterface $em
+     * @return Response
+     */
     #[Route('/signer/{token}', name: 'app_etudiant_signer', methods: ['GET'])]
     public function signer(
         string $token,

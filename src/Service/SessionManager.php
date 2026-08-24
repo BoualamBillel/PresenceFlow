@@ -98,8 +98,12 @@ final class SessionManager
     /**
      * Lance la session : génère le jeton QR et initialise les fiches d'émargement
      * de chaque élève de la classe. Ne flush pas (à la charge de l'appelant).
+     * 
+     * Starts the session: generates the QR token and initializes the attendance sheets
+     * for each student in the class. Does not flush (caller is responsible).
      *
      * @return bool false si l'action est hors des plages horaires autorisées
+     * @return bool false if the action is outside the allowed time ranges
      */
     public function start(SessionCours $session): bool
     {
@@ -138,6 +142,11 @@ final class SessionManager
     /**
      * Clôture la session : invalide le jeton QR et fige les fiches
      * restées EN_ATTENTE en ABSENT. Ne flush pas (à la charge de l'appelant).
+     * 
+     * Closes the session: invalidates the QR token and freezes the sheets
+     * that remain EN_ATTENTE as ABSENT. Does not flush (caller is responsible).
+     * @param SessionCours $session
+     * @return void
      */
     public function close(SessionCours $session): void
     {

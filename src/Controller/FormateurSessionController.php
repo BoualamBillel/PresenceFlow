@@ -88,6 +88,14 @@ class FormateurSessionController extends AbstractController
     }
 
     #[Route('/session/{id}/refresh-qr', name: 'app_formateur_session_refresh_qr', methods: ['POST'])]
+    /**
+     * Régénère le jeton QR d'une session et retourne l'image QR code (SVG en data-URI)
+     * Regenerates the QR token of a session and returns the QR code image (SVG in data-URI)
+     * @param Request $request
+     * @param SessionCours $session
+     * @param EntityManagerInterface $em
+     * @return JsonResponse
+     */
     public function refreshQr(Request $request, SessionCours $session, EntityManagerInterface $em): JsonResponse
     {
         if ($session->getFormateur() !== $this->getUser()) {

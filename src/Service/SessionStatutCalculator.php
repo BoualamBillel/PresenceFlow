@@ -8,6 +8,8 @@ use Symfony\Component\Clock\ClockInterface;
 
 /**
  * Déduit le statut temporel d'une session de cours.
+ * Determines the time status of a class session.
+ * @return SessionStatut
  */
 final class SessionStatutCalculator
 {
