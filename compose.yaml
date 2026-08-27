@@ -1,4 +1,3 @@
-
 services:
   php:
     build:
@@ -33,15 +32,22 @@ services:
     volumes:
       - database_data:/var/lib/postgresql/data:rw
 
-  mercure:
-    image: dunglas/mercure
-    environment:
-      SERVER_NAME: ':80'
-      MERCURE_PUBLISHER_JWT_KEY: ${MERCURE_JWT_SECRET}
-      MERCURE_SUBSCRIBER_JWT_KEY: ${MERCURE_JWT_SECRET}
-      CORS_ALLOWED_ORIGINS: '*'
-    ports:
-      - "3000:80"
+# Services provisionnes pour des evolutions identifiees, hors perimetre MVP.
+# Aucun code applicatif ne les consomme aujourd'hui : ils sont desactives
+# pour garder une stack minimale.
+#
+#  mercure : notifications temps reel poussees, en remplacement du
+#            rafraichissement par requetes AJAX.
+#
+#  mercure:
+#    image: dunglas/mercure
+#    environment:
+#      SERVER_NAME: ':80'
+#      MERCURE_PUBLISHER_JWT_KEY: ${MERCURE_JWT_SECRET}
+#      MERCURE_SUBSCRIBER_JWT_KEY: ${MERCURE_JWT_SECRET}
+#      CORS_ALLOWED_ORIGINS: '*'
+#    ports:
+#      - "3000:80"
 
 volumes:
   database_data:
