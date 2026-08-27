@@ -108,7 +108,8 @@ class EmargementRepository extends ServiceEntityRepository
     public function findStatistiquesParEtudiant(Classe $classe, User $formateur): array
     {
         return $this->createQueryBuilder('e')
-            ->select('u.id AS etudiantId', 'COUNT(e.id) AS total', "SUM(CASE WHEN e.statut IN ('PRESENT', 'RETARD') THEN 1 ELSE 0 END) AS presents", "SUM(CASE WHEN e.statut = 'ABSENT' THEN 1 ELSE 0 END) AS absents")
+            ->select('u.id AS etudiantId', 'COUNT(e.id) AS total', "SUM(CASE WHEN e.statut IN ('PRESENT', 'RETARD') THEN 1 ELSE 0 END) AS presents",
+             "SUM(CASE WHEN e.statut = 'ABSENT' THEN 1 ELSE 0 END) AS absents")
             ->innerJoin('e.session', 's')
             ->innerJoin('e.etudiant', 'u')
             ->andWhere('s.classe = :classe')

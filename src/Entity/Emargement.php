@@ -9,6 +9,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: EmargementRepository::class)]
+#[ORM\UniqueConstraint(name: 'uniq_emargement_etudiant_session', columns: ['etudiant_id', 'session_id'])]
 class Emargement
 {
     #[ORM\Id]
