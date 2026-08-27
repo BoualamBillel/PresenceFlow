@@ -25,6 +25,12 @@ class ForcePasswordChangeSubscriber implements EventSubscriberInterface
         ];
     }
 
+    /**
+     * Redirige l'utilisateur vers la page de changement de mot de passe si nécessaire.
+     * Redirects the user to the password change page if necessary.
+     * @param RequestEvent $event
+     * @return void
+     */
     public function onKernelRequest(RequestEvent $event): void
     {
         // On ignore les sous-requêtes pour ne pas créer de boucles

@@ -8,6 +8,11 @@ use App\Service\SessionStatutCalculator;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Clock\MockClock;
 
+/**
+ * Tests unitaire qui vérifie le comportement du service SessionStatutCalculator.
+ * Units tests that verify the behavior of the SessionStatutCalculator service. 
+ * @covers \App\Service\SessionStatutCalculator
+ */
 class SessionStatutCalculatorTest extends TestCase
 {
     private function makeSession(string $date, string $debut, string $fin): SessionCours

@@ -11,6 +11,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 #[ORM\Entity(repositoryClass: SessionCoursRepository::class)]
+#[ORM\UniqueConstraint(name: 'uniq_session_qr_code_token', columns: ['qr_code_token'])]
 class SessionCours
 {
     #[ORM\Id]
