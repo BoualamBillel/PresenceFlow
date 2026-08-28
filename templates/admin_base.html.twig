@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Administration - PresenceFlow{% endblock %}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     {% block stylesheets %}{% endblock %}
@@ -93,17 +93,17 @@
     {# --- HEADER ADMIN --- #}
     <header
         class="bg-white px-4 sm:px-6 lg:pl-80 py-4 flex justify-between items-center sticky top-0 z-30 border-b border-slate-200">
-        <button id="btn-burger" class="text-slate-800 hover:text-black relative lg:hidden">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <button id="btn-burger" aria-label="Ouvrir le menu" class="text-slate-800 hover:text-black relative lg:hidden">
+            <svg class="w-6 h-6" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6h16M4 12h16M4 18h16">
                 </path>
             </svg>
         </button>
         <h1 class="text-base font-black text-slate-900 tracking-wide">{% block header_title %}Administration{% endblock
             %}</h1>
-        <a href="{{ path('app_logout') }}" aria-label="Se déconnecter" class="text-slate-800 hover:text-red-600 transition-colors duration-200"
-            title="Se déconnecter">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <a href="{{ path('app_logout') }}" aria-label="Se déconnecter"
+            class="text-slate-800 hover:text-red-600 transition-colors duration-200" title="Se déconnecter">
+            <svg class="w-6 h-6" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
                     d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
                 </path>
