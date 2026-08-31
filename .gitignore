@@ -22,3 +22,6 @@
 
 /public/uploads/justificatifs/*
 !/public/uploads/justificatifs/dummy_certificat.pdf
+
+*.md
+!README.md
